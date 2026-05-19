@@ -12,7 +12,7 @@ function App() {
   const { user, loading: authLoading } = useAuth();
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
 
-  const { games, loading: gamesLoading, createGame, removeGame } = useGames(
+  const { games, loading: gamesLoading, createGame, editGame, removeGame } = useGames(
     user?.uid ?? null
   );
 
@@ -74,6 +74,7 @@ function App() {
           onSelectGame={setSelectedGameId}
           onDeleteGame={removeGame}
           onAddGame={createGame}
+          onEditGame={editGame}
           loading={gamesLoading}
         />
 

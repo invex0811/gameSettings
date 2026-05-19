@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Game } from '../../types';
 import { Button } from '../UI/Button';
 import { AddGameModal } from '../Games/AddGameModal';
+import { EditGameModal } from '../Games/EditGameModal';
 import { ConfirmModal } from '../UI/ConfirmModal';
 
 interface SidebarProps {
@@ -9,7 +10,8 @@ interface SidebarProps {
   selectedGameId: string | null;
   onSelectGame: (gameId: string) => void;
   onDeleteGame: (gameId: string) => void;
-  onAddGame: (name: string, emoji: string) => Promise<void>;
+  onAddGame: (name: string, color: string) => Promise<void>;
+  onEditGame: (gameId: string, name: string, color: string) => Promise<void>;
   loading: boolean;
 }
 
@@ -19,9 +21,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectGame,
   onDeleteGame,
   onAddGame,
+  onEditGame,
   loading,
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingGame, setEditingGame] = useState<Game | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmGame, setConfirmGame] = useState<Game | null>(null);
 
@@ -78,29 +82,38 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 <div
-                  className="w-7 h-7 rounded-md shrink-0 flex items-center justify-center text-white text-xs font-bold"
+                  className="w-7 h-7 rounded-md shrink-0"
                   style={{ backgroundColor: game.color }}
-                >
-                  {game.name.slice(0, 2).toUpperCase()}
-                </div>
+                />
                 <span className="text-sm font-bold truncate flex-1">{game.name}</span>
-                <button
-                  onClick={(e) => handleDeleteClick(e, game)}
-                  disabled={deletingId === game.id}
-                  className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-400 transition-all shrink-0"
-                  title="Delete game"
-                >
-                  {deletingId === game.id ? (
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+                <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingGame(game); }}
+                    className="text-gray-600 hover:text-indigo-400 transition-all"
+                    title="Edit game"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                  ) : (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  )}
-                </button>
+                  </button>
+                  <button
+                    onClick={(e) => handleDeleteClick(e, game)}
+                    disabled={deletingId === game.id}
+                    className="text-gray-600 hover:text-red-400 transition-all"
+                    title="Delete game"
+                  >
+                    {deletingId === game.id ? (
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
             ))
           )}
@@ -111,6 +124,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onAdd={onAddGame}
+      />
+
+      <EditGameModal
+        isOpen={editingGame !== null}
+        game={editingGame}
+        onClose={() => setEditingGame(null)}
+        onSave={onEditGame}
       />
 
       <ConfirmModal

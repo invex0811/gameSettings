@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Game } from '../../types';
 import { Modal } from '../UI/Modal';
 import { Button } from '../UI/Button';
 
@@ -8,26 +9,32 @@ const PRESET_COLORS = [
   '#8b5cf6', '#ec4899', '#64748b', '#ffffff',
 ];
 
-interface AddGameModalProps {
+interface EditGameModalProps {
   isOpen: boolean;
+  game: Game | null;
   onClose: () => void;
-  onAdd: (name: string, color: string) => Promise<void>;
+  onSave: (gameId: string, name: string, color: string) => Promise<void>;
 }
 
-export const AddGameModal: React.FC<AddGameModalProps> = ({ isOpen, onClose, onAdd }) => {
+export const EditGameModal: React.FC<EditGameModalProps> = ({ isOpen, game, onClose, onSave }) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#6366f1');
   const [loading, setLoading] = useState(false);
   const colorInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (game) {
+      setName(game.name);
+      setColor(game.color);
+    }
+  }, [game]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!game || !name.trim()) return;
     setLoading(true);
     try {
-      await onAdd(name.trim(), color);
-      setName('');
-      setColor('#6366f1');
+      await onSave(game.id, name.trim(), color);
       onClose();
     } finally {
       setLoading(false);
@@ -35,7 +42,7 @@ export const AddGameModal: React.FC<AddGameModalProps> = ({ isOpen, onClose, onA
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add New Game">
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit Game">
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Preview */}
         <div className="flex items-center gap-4 p-4 bg-gray-750 rounded-xl border border-gray-700">
@@ -82,7 +89,6 @@ export const AddGameModal: React.FC<AddGameModalProps> = ({ isOpen, onClose, onA
               </button>
             ))}
 
-            {/* Custom color picker */}
             <button
               type="button"
               onClick={() => colorInputRef.current?.click()}
@@ -101,7 +107,6 @@ export const AddGameModal: React.FC<AddGameModalProps> = ({ isOpen, onClose, onA
               className="sr-only"
             />
 
-            {/* Current custom color swatch if not in presets */}
             {!PRESET_COLORS.includes(color) && (
               <div
                 className="w-7 h-7 rounded-lg ring-2 ring-white/30"
@@ -116,7 +121,7 @@ export const AddGameModal: React.FC<AddGameModalProps> = ({ isOpen, onClose, onA
             Cancel
           </Button>
           <Button type="submit" variant="primary" className="flex-1" disabled={!name.trim() || loading}>
-            {loading ? 'Adding...' : 'Add Game'}
+            {loading ? 'Saving...' : 'Save'}
           </Button>
         </div>
       </form>

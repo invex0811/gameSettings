@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Game } from '../types';
-import { subscribeToGames, addGame, deleteGame } from '../firebase/firestore';
+import { subscribeToGames, addGame, deleteGame, updateGame } from '../firebase/firestore';
 
 interface UseGamesReturn {
   games: Game[];
   loading: boolean;
   createGame: (name: string, color: string) => Promise<void>;
+  editGame: (gameId: string, name: string, color: string) => Promise<void>;
   removeGame: (gameId: string) => Promise<void>;
 }
 
@@ -32,10 +33,15 @@ export const useGames = (uid: string | null): UseGamesReturn => {
     await addGame(uid, name, color);
   };
 
+  const editGame = async (gameId: string, name: string, color: string): Promise<void> => {
+    if (!uid) return;
+    await updateGame(uid, gameId, { name, color });
+  };
+
   const removeGame = async (gameId: string): Promise<void> => {
     if (!uid) return;
     await deleteGame(uid, gameId);
   };
 
-  return { games, loading, createGame, removeGame };
+  return { games, loading, createGame, editGame, removeGame };
 };

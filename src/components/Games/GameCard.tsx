@@ -26,11 +26,9 @@ export const GameCard: React.FC<GameCardProps> = ({
       }`}
     >
       <div
-        className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center text-white text-sm font-bold"
+        className="w-10 h-10 rounded-xl shrink-0"
         style={{ backgroundColor: game.color }}
-      >
-        {game.name.slice(0, 2).toUpperCase()}
-      </div>
+      />
       <div className="flex-1 min-w-0">
         <p className="font-bold text-white truncate">{game.name}</p>
         <p className="text-xs text-gray-500">
