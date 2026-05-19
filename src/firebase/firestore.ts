@@ -34,6 +34,14 @@ export const addGame = async (
   return ref.id;
 };
 
+export const updateGame = async (
+  uid: string,
+  gameId: string,
+  data: { name?: string; color?: string }
+): Promise<void> => {
+  await updateDoc(doc(db, 'users', uid, 'games', gameId), data);
+};
+
 export const deleteGame = async (uid: string, gameId: string): Promise<void> => {
   // Delete all profiles first
   const profilesSnap = await getDocs(profilesCollection(uid, gameId));
