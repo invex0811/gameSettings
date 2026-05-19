@@ -124,6 +124,24 @@ export const copyProfile = async (
   return ref.id;
 };
 
+export const getAllGamesWithProfiles = async (uid: string) => {
+  const gamesSnap = await getDocs(query(gamesCollection(uid), orderBy('createdAt', 'asc')));
+  const result = await Promise.all(
+    gamesSnap.docs.map(async (gameDoc) => {
+      const game = { id: gameDoc.id, ...(gameDoc.data() as Omit<Game, 'id'>) };
+      const profilesSnap = await getDocs(
+        query(profilesCollection(uid, gameDoc.id), orderBy('createdAt', 'asc'))
+      );
+      const profiles: Profile[] = profilesSnap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<Profile, 'id'>),
+      }));
+      return { game, profiles };
+    })
+  );
+  return result;
+};
+
 export const subscribeToProfiles = (
   uid: string,
   gameId: string,

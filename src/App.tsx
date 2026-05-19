@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useGames } from './hooks/useGames';
 import { useProfiles } from './hooks/useProfiles';
+import { getAllGamesWithProfiles } from './firebase/firestore';
 import { LoginPage } from './components/Auth/LoginPage';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
@@ -35,9 +36,37 @@ function App() {
 
   const selectedGame = games.find((g) => g.id === selectedGameId) ?? null;
 
+  const handleExportAll = async () => {
+    if (!user) return;
+    const data = await getAllGamesWithProfiles(user.uid);
+    const exportData = {
+      exportedAt: new Date().toISOString(),
+      games: data.map(({ game, profiles }) => ({
+        name: game.name,
+        emoji: game.emoji,
+        profiles: profiles.map((p) => ({
+          name: p.name,
+          params: p.params,
+          notes: p.notes,
+          tags: p.tags,
+          files: p.files.map((f) => ({ name: f.name })),
+        })),
+      })),
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `game-settings-export-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
-      <Header user={user} />
+      <Header user={user} onExportAll={handleExportAll} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           games={games}

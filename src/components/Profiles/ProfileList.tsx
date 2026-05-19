@@ -51,23 +51,6 @@ export const ProfileList: React.FC<ProfileListProps> = ({
     }
   };
 
-  const handleExport = (profile: Profile) => {
-    const data = {
-      name: profile.name,
-      params: profile.params,
-      notes: profile.notes,
-      tags: profile.tags,
-      exportedAt: new Date().toISOString(),
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${game.name}-${profile.name}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const handleDelete = async (profileId: string) => {
     if (!confirm('Delete this profile?')) return;
     await onDeleteProfile(profileId);
@@ -144,7 +127,6 @@ export const ProfileList: React.FC<ProfileListProps> = ({
               onEdit={() => setEditingProfile(profile)}
               onDelete={() => handleDelete(profile.id)}
               onCopy={() => onCopyProfile(profile)}
-              onExport={() => handleExport(profile)}
             />
           ))}
         </div>

@@ -2,13 +2,13 @@ import React from 'react';
 import { Profile } from '../../types';
 import { Button } from '../UI/Button';
 import { Tag } from '../UI/Tag';
+import { downloadFile } from '../../firebase/storage';
 
 interface ProfileCardProps {
   profile: Profile;
   onEdit: () => void;
   onDelete: () => void;
   onCopy: () => void;
-  onExport: () => void;
 }
 
 export const ProfileCard: React.FC<ProfileCardProps> = ({
@@ -16,18 +16,30 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   onEdit,
   onDelete,
   onCopy,
-  onExport,
 }) => {
+  const handleDownloadFile = () => {
+    if (profile.files.length === 1) {
+      downloadFile(profile.files[0].name, profile.files[0].content);
+    } else {
+      onEdit();
+    }
+  };
+
   return (
     <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 hover:border-gray-600 transition-all duration-200 group">
       <div className="flex items-start justify-between gap-3 mb-3">
         <h3 className="font-semibold text-white text-base truncate">{profile.name}</h3>
         <div className="flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="sm" onClick={onExport} title="Export JSON">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4M4 12h16" />
-            </svg>
-          </Button>
+          {profile.files.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={handleDownloadFile} title={profile.files.length > 1 ? `${profile.files.length} files — open editor` : `Download ${profile.files[0].name}`}>
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              {profile.files.length > 1 && (
+                <span className="text-xs text-gray-400">{profile.files.length}</span>
+              )}
+            </Button>
+          )}
           <Button variant="ghost" size="sm" onClick={onCopy} title="Duplicate">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
