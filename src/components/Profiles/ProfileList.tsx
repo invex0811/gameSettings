@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Profile, Game, GameParam, GameFile } from '../../types';
 import { ProfileCard } from './ProfileCard';
 import { ProfileEditor } from './ProfileEditor';
@@ -37,6 +37,26 @@ export const ProfileList: React.FC<ProfileListProps> = ({
   const [newProfileName, setNewProfileName] = useState('');
   const [showNewForm, setShowNewForm] = useState(false);
   const [creatingProfile, setCreatingProfile] = useState(false);
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+
+  const allTags = useMemo(
+    () => [...new Set(profiles.flatMap((p) => p.tags))].sort(),
+    [profiles]
+  );
+
+  const filteredProfiles = useMemo(
+    () =>
+      activeTags.length === 0
+        ? profiles
+        : profiles.filter((p) => activeTags.some((t) => p.tags.includes(t))),
+    [profiles, activeTags]
+  );
+
+  const toggleTag = (tag: string) => {
+    setActiveTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,27 +79,56 @@ export const ProfileList: React.FC<ProfileListProps> = ({
   return (
     <div className="flex-1 overflow-y-auto p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <span className="text-3xl">{game.emoji}</span>
           <div>
             <h1 className="text-xl font-bold text-white">{game.name}</h1>
             <p className="text-sm text-gray-500">
-              {profiles.length} profile{profiles.length !== 1 ? 's' : ''}
+              {activeTags.length > 0
+                ? `${filteredProfiles.length} of ${profiles.length} profiles`
+                : `${profiles.length} profile${profiles.length !== 1 ? 's' : ''}`}
             </p>
           </div>
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => setShowNewForm(true)}
-        >
+        <Button variant="primary" size="sm" onClick={() => setShowNewForm(true)}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           New Profile
         </Button>
       </div>
+
+      {/* Tag Filter */}
+      {allTags.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap mb-5 pb-5 border-b border-gray-800">
+          <span className="text-xs text-gray-500 shrink-0">Filter:</span>
+          {allTags.map((tag) => {
+            const active = activeTags.includes(tag);
+            return (
+              <button
+                key={tag}
+                onClick={() => toggleTag(tag)}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-150 border ${
+                  active
+                    ? 'bg-indigo-600 border-indigo-500 text-white'
+                    : 'bg-transparent border-gray-600 text-gray-400 hover:border-indigo-500 hover:text-indigo-300'
+                }`}
+              >
+                {tag}
+              </button>
+            );
+          })}
+          {activeTags.length > 0 && (
+            <button
+              onClick={() => setActiveTags([])}
+              className="ml-1 text-xs text-gray-600 hover:text-gray-400 transition-colors"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      )}
 
       {/* New Profile Form */}
       {showNewForm && (
@@ -118,9 +167,21 @@ export const ProfileList: React.FC<ProfileListProps> = ({
             Create Profile
           </Button>
         </div>
+      ) : filteredProfiles.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="text-4xl mb-4">🏷️</div>
+          <h3 className="text-lg font-medium text-gray-400 mb-2">No profiles match</h3>
+          <p className="text-sm text-gray-600 mb-4">No profiles have the selected tags</p>
+          <button
+            onClick={() => setActiveTags([])}
+            className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+          >
+            Clear filters
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {profiles.map((profile) => (
+          {filteredProfiles.map((profile) => (
             <ProfileCard
               key={profile.id}
               profile={profile}
