@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Game } from '../../types';
 import { Button } from '../UI/Button';
 import { AddGameModal } from '../Games/AddGameModal';
+import { ConfirmModal } from '../UI/ConfirmModal';
 
 interface SidebarProps {
   games: Game[];
@@ -22,13 +23,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmGame, setConfirmGame] = useState<Game | null>(null);
 
-  const handleDelete = async (e: React.MouseEvent, gameId: string) => {
+  const handleDeleteClick = (e: React.MouseEvent, game: Game) => {
     e.stopPropagation();
-    if (!confirm('Delete this game and all its profiles?')) return;
-    setDeletingId(gameId);
+    setConfirmGame(game);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!confirmGame) return;
+    const id = confirmGame.id;
+    setConfirmGame(null);
+    setDeletingId(id);
     try {
-      await onDeleteGame(gameId);
+      await onDeleteGame(id);
     } finally {
       setDeletingId(null);
     }
@@ -72,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className="text-xl shrink-0">{game.emoji}</span>
                 <span className="text-sm font-medium truncate flex-1">{game.name}</span>
                 <button
-                  onClick={(e) => handleDelete(e, game.id)}
+                  onClick={(e) => handleDeleteClick(e, game)}
                   disabled={deletingId === game.id}
                   className="opacity-0 group-hover:opacity-100 text-gray-600 hover:text-red-400 transition-all shrink-0"
                   title="Delete game"
@@ -98,6 +106,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onAdd={onAddGame}
+      />
+
+      <ConfirmModal
+        isOpen={confirmGame !== null}
+        title="Delete game"
+        description={`"${confirmGame?.name}" and all its profiles will be permanently deleted.`}
+        confirmLabel="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmGame(null)}
       />
     </>
   );

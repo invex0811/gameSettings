@@ -3,6 +3,7 @@ import { Profile, Game, GameParam, GameFile } from '../../types';
 import { ProfileCard } from './ProfileCard';
 import { ProfileEditor } from './ProfileEditor';
 import { Button } from '../UI/Button';
+import { ConfirmModal } from '../UI/ConfirmModal';
 
 interface ProfileListProps {
   game: Game;
@@ -34,6 +35,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({
   onCopyProfile,
 }) => {
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [confirmProfile, setConfirmProfile] = useState<Profile | null>(null);
   const [newProfileName, setNewProfileName] = useState('');
   const [showNewForm, setShowNewForm] = useState(false);
   const [creatingProfile, setCreatingProfile] = useState(false);
@@ -71,9 +73,11 @@ export const ProfileList: React.FC<ProfileListProps> = ({
     }
   };
 
-  const handleDelete = async (profileId: string) => {
-    if (!confirm('Delete this profile?')) return;
-    await onDeleteProfile(profileId);
+  const handleDeleteConfirm = async () => {
+    if (!confirmProfile) return;
+    const id = confirmProfile.id;
+    setConfirmProfile(null);
+    await onDeleteProfile(id);
   };
 
   return (
@@ -186,19 +190,27 @@ export const ProfileList: React.FC<ProfileListProps> = ({
               key={profile.id}
               profile={profile}
               onEdit={() => setEditingProfile(profile)}
-              onDelete={() => handleDelete(profile.id)}
+              onDelete={() => setConfirmProfile(profile)}
               onCopy={() => onCopyProfile(profile)}
             />
           ))}
         </div>
       )}
 
-      {/* Editor Modal */}
       <ProfileEditor
         isOpen={editingProfile !== null}
         onClose={() => setEditingProfile(null)}
         profile={editingProfile}
         onSave={onEditProfile}
+      />
+
+      <ConfirmModal
+        isOpen={confirmProfile !== null}
+        title="Delete profile"
+        description={`"${confirmProfile?.name}" will be permanently deleted.`}
+        confirmLabel="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmProfile(null)}
       />
     </div>
   );

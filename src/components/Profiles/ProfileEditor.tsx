@@ -5,6 +5,7 @@ import { Button } from '../UI/Button';
 import { Tag } from '../UI/Tag';
 import { ParamsTable } from './ParamsTable';
 import { readFileAsText, downloadFile } from '../../firebase/storage';
+import { ConfirmModal } from '../UI/ConfirmModal';
 
 interface ProfileEditorProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
   const [tagInput, setTagInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [confirmFile, setConfirmFile] = useState<GameFile | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -96,8 +98,13 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
   };
 
   const handleDeleteFile = (fileItem: GameFile) => {
-    if (!confirm(`Delete file "${fileItem.name}"?`)) return;
-    setFiles(files.filter((f) => f.id !== fileItem.id));
+    setConfirmFile(fileItem);
+  };
+
+  const handleDeleteFileConfirm = () => {
+    if (!confirmFile) return;
+    setFiles(files.filter((f) => f.id !== confirmFile.id));
+    setConfirmFile(null);
   };
 
   return (
@@ -240,6 +247,15 @@ export const ProfileEditor: React.FC<ProfileEditorProps> = ({
           </Button>
         </div>
       </form>
+
+      <ConfirmModal
+        isOpen={confirmFile !== null}
+        title="Delete file"
+        description={`"${confirmFile?.name}" will be removed from this profile.`}
+        confirmLabel="Delete"
+        onConfirm={handleDeleteFileConfirm}
+        onCancel={() => setConfirmFile(null)}
+      />
     </Modal>
   );
 };
