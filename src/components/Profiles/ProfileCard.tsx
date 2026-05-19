@@ -25,7 +25,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="sm" onClick={onExport} title="Export JSON">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4M4 12h16" />
             </svg>
           </Button>
           <Button variant="ghost" size="sm" onClick={onCopy} title="Duplicate">
