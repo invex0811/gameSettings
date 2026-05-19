@@ -27,11 +27,10 @@ export const Header: React.FC<HeaderProps> = ({ user, onExportAll }) => {
   };
 
   return (
-    <header className="h-14 bg-gray-900 border-b border-gray-800 relative flex items-center px-4 shrink-0 z-10">
-      <div className="flex-1" />
-      <div className="flex items-center gap-2 absolute left-1/2 -translate-x-1/2">
-        <span className="text-xl">🎮</span>
-        <span className="font-bold text-white text-lg">Game Settings</span>
+    <header className="h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 shrink-0 z-10">
+      <div className="flex items-center gap-2">
+        <span className="text-xl leading-none">🎮</span>
+        <span className="font-bold text-white text-lg leading-none">Game Settings</span>
       </div>
 
       <div className="flex items-center gap-2">
