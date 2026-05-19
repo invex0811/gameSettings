@@ -86,10 +86,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   style={{ backgroundColor: game.color }}
                 />
                 <span className="text-sm font-bold truncate flex-1">{game.name}</span>
-                <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 shrink-0">
+                <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 shrink-0 transition-opacity duration-150">
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditingGame(game); }}
-                    className="text-gray-600 hover:text-indigo-400 transition-all"
+                    className="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-amber-500/15 hover:scale-110 active:scale-95 transition-all duration-150"
                     title="Edit game"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,16 +99,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <button
                     onClick={(e) => handleDeleteClick(e, game)}
                     disabled={deletingId === game.id}
-                    className="text-gray-600 hover:text-red-400 transition-all"
+                    className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/15 hover:scale-110 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Delete game"
                   >
                     {deletingId === game.id ? (
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
                       </svg>
                     ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     )}
