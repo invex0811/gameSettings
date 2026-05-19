@@ -5,7 +5,7 @@ import { subscribeToGames, addGame, deleteGame } from '../firebase/firestore';
 interface UseGamesReturn {
   games: Game[];
   loading: boolean;
-  createGame: (name: string, emoji: string) => Promise<void>;
+  createGame: (name: string, color: string) => Promise<void>;
   removeGame: (gameId: string) => Promise<void>;
 }
 
@@ -27,9 +27,9 @@ export const useGames = (uid: string | null): UseGamesReturn => {
     return unsubscribe;
   }, [uid]);
 
-  const createGame = async (name: string, emoji: string): Promise<void> => {
+  const createGame = async (name: string, color: string): Promise<void> => {
     if (!uid) return;
-    await addGame(uid, name, emoji);
+    await addGame(uid, name, color);
   };
 
   const removeGame = async (gameId: string): Promise<void> => {

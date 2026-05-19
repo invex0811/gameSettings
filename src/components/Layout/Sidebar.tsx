@@ -77,8 +77,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                 }`}
               >
-                <span className="text-xl shrink-0">{game.emoji}</span>
-                <span className="text-sm font-medium truncate flex-1">{game.name}</span>
+                <div
+                  className="w-7 h-7 rounded-md shrink-0 flex items-center justify-center text-white text-xs font-bold"
+                  style={{ backgroundColor: game.color }}
+                >
+                  {game.name.slice(0, 2).toUpperCase()}
+                </div>
+                <span className="text-sm font-bold truncate flex-1">{game.name}</span>
                 <button
                   onClick={(e) => handleDeleteClick(e, game)}
                   disabled={deletingId === game.id}

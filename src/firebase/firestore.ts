@@ -24,11 +24,11 @@ export const gamesCollection = (uid: string) =>
 export const addGame = async (
   uid: string,
   name: string,
-  emoji: string
+  color: string
 ): Promise<string> => {
   const ref = await addDoc(gamesCollection(uid), {
     name,
-    emoji,
+    color,
     createdAt: serverTimestamp(),
   });
   return ref.id;

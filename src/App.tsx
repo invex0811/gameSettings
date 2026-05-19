@@ -43,7 +43,7 @@ function App() {
       exportedAt: new Date().toISOString(),
       games: data.map(({ game, profiles }) => ({
         name: game.name,
-        emoji: game.emoji,
+        color: game.color,
         profiles: profiles.map((p) => ({
           name: p.name,
           params: p.params,

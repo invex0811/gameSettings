@@ -3,7 +3,7 @@ import { Timestamp } from 'firebase/firestore';
 export interface Game {
   id: string;
   name: string;
-  emoji: string;
+  color: string;
   createdAt: Timestamp;
 }
 

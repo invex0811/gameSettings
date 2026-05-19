@@ -85,7 +85,12 @@ export const ProfileList: React.FC<ProfileListProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <span className="text-3xl">{game.emoji}</span>
+          <div
+            className="w-11 h-11 rounded-xl shrink-0 flex items-center justify-center text-white text-base font-bold shadow-lg"
+            style={{ backgroundColor: game.color }}
+          >
+            {game.name.slice(0, 2).toUpperCase()}
+          </div>
           <div>
             <h1 className="text-xl font-bold text-white">{game.name}</h1>
             <p className="text-sm text-gray-500">
