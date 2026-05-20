@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </Button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-2">
+        <nav className="flex-1 overflow-y-auto py-2 px-2">
           {loading ? (
             <div className="px-4 py-8 text-center text-gray-600 text-sm">Loading...</div>
           ) : games.length === 0 ? (
@@ -75,9 +75,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div
                 key={game.id}
                 onClick={() => onSelectGame(game.id)}
-                className={`group flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-all duration-150 ${
+                className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all duration-150 ${
                   selectedGameId === game.id
-                    ? 'bg-indigo-600/20 text-white border-r-2 border-indigo-500'
+                    ? 'bg-indigo-600/20 text-white'
                     : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                 }`}
               >
