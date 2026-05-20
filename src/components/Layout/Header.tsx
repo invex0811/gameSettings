@@ -62,11 +62,11 @@ export const Header: React.FC<HeaderProps> = ({ user, onExportAll }) => {
         {menuOpen && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-            <div className="absolute right-0 top-11 z-20 w-56 bg-gray-800 border border-gray-700 rounded-xl shadow-xl py-1 overflow-hidden">
+            <div className="absolute right-0 top-11 z-20 w-56 bg-gray-800 border border-gray-700 rounded-xl shadow-xl py-1 overflow-hidden px-1">
               <button
                 onClick={handleExportAll}
                 disabled={exporting}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors disabled:opacity-50"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-lg w-full text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors disabled:opacity-50"
               >
                 {exporting ? (
                   <svg className="w-4 h-4 text-indigo-400 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -83,7 +83,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onExportAll }) => {
               <div className="border-t border-gray-700 my-1" />
               <button
                 onClick={handleSignOut}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 transition-colors"
+                className="flex items-center gap-2.5 px-3 py-2 rounded-lg w-full text-sm text-red-400 hover:bg-gray-700 hover:text-red-300 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
