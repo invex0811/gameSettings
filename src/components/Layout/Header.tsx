@@ -5,9 +5,10 @@ import { signOut } from '../../firebase/auth';
 interface HeaderProps {
   user: User;
   onExportAll: () => Promise<void>;
+  onHome: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ user, onExportAll }) => {
+export const Header: React.FC<HeaderProps> = ({ user, onExportAll, onHome }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
 
@@ -28,12 +29,15 @@ export const Header: React.FC<HeaderProps> = ({ user, onExportAll }) => {
 
   return (
     <header className="h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 shrink-0 z-10">
-      <div className="flex items-center gap-2">
+      <button
+        onClick={onHome}
+        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+      >
         <svg className="w-5 h-5 text-indigo-400 shrink-0" fill="currentColor" viewBox="0 0 24 24">
           <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5S19.33 12 18.5 12z"/>
         </svg>
         <span className="font-bold text-white text-lg">Game Settings</span>
-      </div>
+      </button>
 
       <div className="relative">
         <button

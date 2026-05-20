@@ -7,6 +7,7 @@ import { LoginPage } from './components/Auth/LoginPage';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
 import { ProfileList } from './components/Profiles/ProfileList';
+import { EmptyState } from './components/Layout/EmptyState';
 
 function App() {
   const { user, loading: authLoading } = useAuth();
@@ -66,7 +67,7 @@ function App() {
 
   return (
     <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
-      <Header user={user} onExportAll={handleExportAll} />
+      <Header user={user} onExportAll={handleExportAll} onHome={() => setSelectedGameId(null)} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           games={games}
@@ -91,15 +92,7 @@ function App() {
               onCopyProfile={duplicateProfile}
             />
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-              <div className="text-6xl mb-4">🎮</div>
-              <h2 className="text-xl font-semibold text-gray-400 mb-2">
-                Select a game to view profiles
-              </h2>
-              <p className="text-sm text-gray-600 max-w-sm">
-                Choose a game from the sidebar or add a new one to start saving your settings
-              </p>
-            </div>
+            <EmptyState games={games} onSelectGame={setSelectedGameId} />
           )}
         </main>
       </div>

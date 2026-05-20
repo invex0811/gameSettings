@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </Button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-2 px-2">
+        <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-1">
           {loading ? (
             <div className="px-4 py-8 text-center text-gray-600 text-sm">Loading...</div>
           ) : games.length === 0 ? (
