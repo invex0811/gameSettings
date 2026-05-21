@@ -38,3 +38,10 @@ export const downloadArchive = async (path: string, name: string): Promise<void>
   a.click();
   document.body.removeChild(a);
 };
+
+export const fetchArchiveBlob = async (path: string): Promise<Blob> => {
+  const dbx = getClient();
+  const response = await dbx.filesGetTemporaryLink({ path });
+  const res = await fetch(response.result.link);
+  return res.blob();
+};

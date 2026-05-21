@@ -5,6 +5,7 @@ import { downloadFile } from '../../firebase/storage';
 
 interface ProfileCardProps {
   profile: Profile;
+  onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onCopy: () => void;
@@ -12,27 +13,32 @@ interface ProfileCardProps {
 
 export const ProfileCard: React.FC<ProfileCardProps> = ({
   profile,
+  onView,
   onEdit,
   onDelete,
   onCopy,
 }) => {
-  const handleDownloadFile = () => {
+  const handleDownloadFile = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (profile.files.length === 1) {
       downloadFile(profile.files[0].name, profile.files[0].content);
     } else {
-      onEdit();
+      onView();
     }
   };
 
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 hover:border-gray-600 transition-all duration-200 group">
+    <div
+      onClick={onView}
+      className="bg-gray-800 border border-gray-700 rounded-xl p-5 hover:border-gray-600 hover:bg-gray-750 transition-all duration-200 group cursor-pointer"
+    >
       <div className="flex items-start justify-between gap-3 mb-3">
         <h3 className="font-semibold text-white text-base truncate">{profile.name}</h3>
         <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
           {profile.files.length > 0 && (
             <button
               onClick={handleDownloadFile}
-              title={profile.files.length > 1 ? `${profile.files.length} files — open editor` : `Download ${profile.files[0].name}`}
+              title={profile.files.length > 1 ? `${profile.files.length} files` : `Download ${profile.files[0].name}`}
               className="flex items-center gap-1 p-1.5 rounded-lg text-gray-500 hover:text-cyan-400 hover:bg-cyan-500/15 hover:scale-110 active:scale-95 transition-all duration-150"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +50,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             </button>
           )}
           <button
-            onClick={onCopy}
+            onClick={(e) => { e.stopPropagation(); onCopy(); }}
             title="Duplicate"
             className="p-1.5 rounded-lg text-gray-500 hover:text-indigo-400 hover:bg-indigo-500/15 hover:scale-110 active:scale-95 transition-all duration-150"
           >
@@ -53,7 +59,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             </svg>
           </button>
           <button
-            onClick={onEdit}
+            onClick={(e) => { e.stopPropagation(); onEdit(); }}
             title="Edit"
             className="p-1.5 rounded-lg text-gray-500 hover:text-amber-400 hover:bg-amber-500/15 hover:scale-110 active:scale-95 transition-all duration-150"
           >
@@ -62,7 +68,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             </svg>
           </button>
           <button
-            onClick={onDelete}
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
             title="Delete"
             className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/15 hover:scale-110 active:scale-95 transition-all duration-150"
           >

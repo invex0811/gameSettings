@@ -4,14 +4,15 @@ import { Button } from '../UI/Button';
 import { AddGameModal } from '../Games/AddGameModal';
 import { EditGameModal } from '../Games/EditGameModal';
 import { ConfirmModal } from '../UI/ConfirmModal';
+import { GameIcon } from '../UI/GameIcon';
 
 interface SidebarProps {
   games: Game[];
   selectedGameId: string | null;
   onSelectGame: (gameId: string) => void;
   onDeleteGame: (gameId: string) => void;
-  onAddGame: (name: string, color: string) => Promise<void>;
-  onEditGame: (gameId: string, name: string, color: string) => Promise<void>;
+  onAddGame: (name: string, color: string, iconUrl?: string) => Promise<void>;
+  onEditGame: (gameId: string, name: string, color: string, iconUrl?: string | null) => Promise<void>;
   loading: boolean;
 }
 
@@ -81,9 +82,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                 }`}
               >
-                <div
-                  className="w-7 h-7 rounded-md shrink-0"
-                  style={{ backgroundColor: game.color }}
+                <GameIcon
+                  iconUrl={game.iconUrl}
+                  color={game.color}
+                  name={game.name}
+                  className="w-7 h-7 rounded-md shrink-0 object-cover"
                 />
                 <span className="text-sm font-bold truncate flex-1">{game.name}</span>
                 <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 shrink-0 transition-opacity duration-150">
@@ -130,7 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isOpen={editingGame !== null}
         game={editingGame}
         onClose={() => setEditingGame(null)}
-        onSave={onEditGame}
+        onSave={(gameId, name, color, iconUrl) => onEditGame(gameId, name, color, iconUrl)}
       />
 
       <ConfirmModal

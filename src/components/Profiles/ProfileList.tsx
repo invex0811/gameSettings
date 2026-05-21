@@ -2,8 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { Profile, Game, GameParam, GameFile, DropboxArchive } from '../../types';
 import { ProfileCard } from './ProfileCard';
 import { ProfileEditor } from './ProfileEditor';
+import { ProfileViewer } from './ProfileViewer';
+import { GameIcon } from '../UI/GameIcon';
 import { Button } from '../UI/Button';
 import { ConfirmModal } from '../UI/ConfirmModal';
+import { exportGameAsZip } from '../../utils/exportZip';
 
 interface ProfileListProps {
   game: Game;
@@ -44,10 +47,12 @@ export const ProfileList: React.FC<ProfileListProps> = ({
   onDeleteProfile,
   onCopyProfile,
 }) => {
+  const [viewingProfile, setViewingProfile] = useState<Profile | null>(null);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [confirmProfile, setConfirmProfile] = useState<Profile | null>(null);
   const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [exporting, setExporting] = useState(false);
 
   const allTags = useMemo(
     () => [...new Set(profiles.flatMap((p) => p.tags))].sort(),
@@ -116,9 +121,11 @@ export const ProfileList: React.FC<ProfileListProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div
-            className="w-11 h-11 rounded-xl shrink-0 shadow-lg"
-            style={{ backgroundColor: game.color }}
+          <GameIcon
+            iconUrl={game.iconUrl}
+            color={game.color}
+            name={game.name}
+            className="w-11 h-11 rounded-xl shrink-0 shadow-lg object-cover"
           />
           <div>
             <h1 className="text-xl font-bold text-white">{game.name}</h1>
@@ -129,12 +136,35 @@ export const ProfileList: React.FC<ProfileListProps> = ({
             </p>
           </div>
         </div>
-        <Button variant="primary" size="sm" onClick={openNew}>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Profile
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={exporting || profiles.length === 0}
+            onClick={async () => {
+              setExporting(true);
+              try { await exportGameAsZip(game, profiles); } finally { setExporting(false); }
+            }}
+          >
+            {exporting ? (
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            )}
+            Export ZIP
+          </Button>
+          <Button variant="primary" size="sm" onClick={openNew}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            New Profile
+          </Button>
+        </div>
       </div>
 
       {/* Tag Filter */}
@@ -200,6 +230,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({
             <ProfileCard
               key={profile.id}
               profile={profile}
+              onView={() => setViewingProfile(profile)}
               onEdit={() => { setIsCreating(false); setEditingProfile(profile); }}
               onDelete={() => setConfirmProfile(profile)}
               onCopy={() => onCopyProfile(profile)}
@@ -207,6 +238,13 @@ export const ProfileList: React.FC<ProfileListProps> = ({
           ))}
         </div>
       )}
+
+      <ProfileViewer
+        isOpen={viewingProfile !== null}
+        onClose={() => setViewingProfile(null)}
+        profile={viewingProfile}
+        onEdit={() => { setIsCreating(false); setEditingProfile(viewingProfile); }}
+      />
 
       <ProfileEditor
         isOpen={editingProfile !== null || isCreating}

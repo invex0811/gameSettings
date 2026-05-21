@@ -4,6 +4,7 @@ export interface Game {
   id: string;
   name: string;
   color: string;
+  iconUrl?: string;
   createdAt: Timestamp;
 }
 

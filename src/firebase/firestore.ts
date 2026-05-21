@@ -9,6 +9,7 @@ import {
   serverTimestamp,
   query,
   orderBy,
+  getCountFromServer,
   Unsubscribe,
   DocumentData,
   QuerySnapshot,
@@ -24,11 +25,13 @@ export const gamesCollection = (uid: string) =>
 export const addGame = async (
   uid: string,
   name: string,
-  color: string
+  color: string,
+  iconUrl?: string
 ): Promise<string> => {
   const ref = await addDoc(gamesCollection(uid), {
     name,
     color,
+    ...(iconUrl ? { iconUrl } : {}),
     createdAt: serverTimestamp(),
   });
   return ref.id;
@@ -37,7 +40,7 @@ export const addGame = async (
 export const updateGame = async (
   uid: string,
   gameId: string,
-  data: { name?: string; color?: string }
+  data: { name?: string; color?: string; iconUrl?: string | null }
 ): Promise<void> => {
   await updateDoc(doc(db, 'users', uid, 'games', gameId), data);
 };
@@ -48,6 +51,19 @@ export const deleteGame = async (uid: string, gameId: string): Promise<void> => 
   const deletePromises = profilesSnap.docs.map((d) => deleteDoc(d.ref));
   await Promise.all(deletePromises);
   await deleteDoc(doc(db, 'users', uid, 'games', gameId));
+};
+
+export const getProfileCounts = async (
+  uid: string,
+  gameIds: string[]
+): Promise<Record<string, number>> => {
+  const entries = await Promise.all(
+    gameIds.map(async (id) => {
+      const snap = await getCountFromServer(profilesCollection(uid, id));
+      return [id, snap.data().count] as [string, number];
+    })
+  );
+  return Object.fromEntries(entries);
 };
 
 export const subscribeToGames = (
