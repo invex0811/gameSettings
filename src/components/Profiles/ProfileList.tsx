@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Profile, Game, GameParam, GameFile } from '../../types';
+import { Profile, Game, GameParam, GameFile, DropboxArchive } from '../../types';
 import { ProfileCard } from './ProfileCard';
 import { ProfileEditor } from './ProfileEditor';
 import { Button } from '../UI/Button';
@@ -10,7 +10,16 @@ interface ProfileListProps {
   profiles: Profile[];
   loading: boolean;
   uid: string;
-  onCreateProfile: (name: string) => Promise<void>;
+  onCreateProfile: (
+    name: string,
+    extra?: {
+      params?: GameParam[];
+      notes?: string;
+      tags?: string[];
+      files?: GameFile[];
+      archives?: DropboxArchive[];
+    }
+  ) => Promise<void>;
   onEditProfile: (
     profileId: string,
     data: {
@@ -19,6 +28,7 @@ interface ProfileListProps {
       notes?: string;
       tags?: string[];
       files?: GameFile[];
+      archives?: DropboxArchive[];
     }
   ) => Promise<void>;
   onDeleteProfile: (profileId: string) => Promise<void>;
@@ -35,10 +45,8 @@ export const ProfileList: React.FC<ProfileListProps> = ({
   onCopyProfile,
 }) => {
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const [confirmProfile, setConfirmProfile] = useState<Profile | null>(null);
-  const [newProfileName, setNewProfileName] = useState('');
-  const [showNewForm, setShowNewForm] = useState(false);
-  const [creatingProfile, setCreatingProfile] = useState(false);
   const [activeTags, setActiveTags] = useState<string[]>([]);
 
   const allTags = useMemo(
@@ -60,16 +68,29 @@ export const ProfileList: React.FC<ProfileListProps> = ({
     );
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProfileName.trim()) return;
-    setCreatingProfile(true);
-    try {
-      await onCreateProfile(newProfileName.trim());
-      setNewProfileName('');
-      setShowNewForm(false);
-    } finally {
-      setCreatingProfile(false);
+  const handleSaveProfile = async (
+    profileId: string | null,
+    data: {
+      name?: string;
+      params?: GameParam[];
+      notes?: string;
+      tags?: string[];
+      files?: GameFile[];
+      archives?: DropboxArchive[];
+    }
+  ) => {
+    if (profileId === null) {
+      await onCreateProfile(data.name!, {
+        params: data.params,
+        notes: data.notes,
+        tags: data.tags,
+        files: data.files,
+        archives: data.archives,
+      });
+      setIsCreating(false);
+    } else {
+      await onEditProfile(profileId, data);
+      setEditingProfile(null);
     }
   };
 
@@ -78,6 +99,16 @@ export const ProfileList: React.FC<ProfileListProps> = ({
     const id = confirmProfile.id;
     setConfirmProfile(null);
     await onDeleteProfile(id);
+  };
+
+  const openNew = () => {
+    setEditingProfile(null);
+    setIsCreating(true);
+  };
+
+  const closeEditor = () => {
+    setEditingProfile(null);
+    setIsCreating(false);
   };
 
   return (
@@ -98,7 +129,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({
             </p>
           </div>
         </div>
-        <Button variant="primary" size="sm" onClick={() => setShowNewForm(true)}>
+        <Button variant="primary" size="sm" onClick={openNew}>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
@@ -137,29 +168,6 @@ export const ProfileList: React.FC<ProfileListProps> = ({
         </div>
       )}
 
-      {/* New Profile Form */}
-      {showNewForm && (
-        <form
-          onSubmit={handleCreate}
-          className="mb-6 flex gap-3 bg-gray-800 border border-gray-700 rounded-xl p-4"
-        >
-          <input
-            type="text"
-            value={newProfileName}
-            onChange={(e) => setNewProfileName(e.target.value)}
-            placeholder="Profile name..."
-            autoFocus
-            className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-          />
-          <Button type="submit" variant="primary" size="sm" disabled={!newProfileName.trim() || creatingProfile}>
-            {creatingProfile ? 'Creating...' : 'Create'}
-          </Button>
-          <Button type="button" variant="secondary" size="sm" onClick={() => { setShowNewForm(false); setNewProfileName(''); }}>
-            Cancel
-          </Button>
-        </form>
-      )}
-
       {/* Profiles Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-16">
@@ -170,7 +178,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({
           <div className="text-5xl mb-4">📋</div>
           <h3 className="text-lg font-medium text-gray-400 mb-2">No profiles yet</h3>
           <p className="text-sm text-gray-600 mb-4">Create your first settings profile for {game.name}</p>
-          <Button variant="primary" onClick={() => setShowNewForm(true)}>
+          <Button variant="primary" onClick={openNew}>
             Create Profile
           </Button>
         </div>
@@ -192,7 +200,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({
             <ProfileCard
               key={profile.id}
               profile={profile}
-              onEdit={() => setEditingProfile(profile)}
+              onEdit={() => { setIsCreating(false); setEditingProfile(profile); }}
               onDelete={() => setConfirmProfile(profile)}
               onCopy={() => onCopyProfile(profile)}
             />
@@ -201,10 +209,11 @@ export const ProfileList: React.FC<ProfileListProps> = ({
       )}
 
       <ProfileEditor
-        isOpen={editingProfile !== null}
-        onClose={() => setEditingProfile(null)}
+        isOpen={editingProfile !== null || isCreating}
+        onClose={closeEditor}
         profile={editingProfile}
-        onSave={onEditProfile}
+        gameId={game.id}
+        onSave={handleSaveProfile}
       />
 
       <ConfirmModal

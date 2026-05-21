@@ -14,7 +14,7 @@ import {
   QuerySnapshot,
 } from 'firebase/firestore';
 import { db } from './config';
-import { Game, Profile, GameParam, GameFile } from '../types';
+import { Game, Profile, GameParam, GameFile, DropboxArchive } from '../types';
 
 // ---- Games ----
 
@@ -72,14 +72,22 @@ export const profilesCollection = (uid: string, gameId: string) =>
 export const addProfile = async (
   uid: string,
   gameId: string,
-  name: string
+  name: string,
+  extra?: {
+    params?: GameParam[];
+    notes?: string;
+    tags?: string[];
+    files?: GameFile[];
+    archives?: DropboxArchive[];
+  }
 ): Promise<string> => {
   const ref = await addDoc(profilesCollection(uid, gameId), {
     name,
-    params: [],
-    notes: '',
-    tags: [],
-    files: [],
+    params: extra?.params ?? [],
+    notes: extra?.notes ?? '',
+    tags: extra?.tags ?? [],
+    files: extra?.files ?? [],
+    archives: extra?.archives ?? [],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -96,6 +104,7 @@ export const updateProfile = async (
     notes?: string;
     tags?: string[];
     files?: GameFile[];
+    archives?: DropboxArchive[];
   }
 ): Promise<void> => {
   const ref = doc(db, 'users', uid, 'games', gameId, 'profiles', profileId);
@@ -126,6 +135,7 @@ export const copyProfile = async (
     notes: profile.notes,
     tags: profile.tags,
     files: profile.files,
+    archives: profile.archives || [],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

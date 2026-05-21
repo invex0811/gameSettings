@@ -18,6 +18,14 @@ export interface GameFile {
   content: string;
 }
 
+export interface DropboxArchive {
+  id: string;
+  name: string;
+  dropboxPath: string;
+  size: number;
+  uploadedAt: string;
+}
+
 export interface Profile {
   id: string;
   name: string;
@@ -25,6 +33,7 @@ export interface Profile {
   notes: string;
   tags: string[];
   files: GameFile[];
+  archives: DropboxArchive[];
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

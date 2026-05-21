@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Profile, GameParam, GameFile } from '../types';
+import { Profile, GameParam, GameFile, DropboxArchive } from '../types';
 import {
   subscribeToProfiles,
   addProfile,
@@ -11,7 +11,7 @@ import {
 interface UseProfilesReturn {
   profiles: Profile[];
   loading: boolean;
-  createProfile: (name: string) => Promise<void>;
+  createProfile: (name: string, extra?: { params?: GameParam[]; notes?: string; tags?: string[]; files?: GameFile[]; archives?: DropboxArchive[] }) => Promise<void>;
   editProfile: (
     profileId: string,
     data: {
@@ -20,6 +20,7 @@ interface UseProfilesReturn {
       notes?: string;
       tags?: string[];
       files?: GameFile[];
+      archives?: DropboxArchive[];
     }
   ) => Promise<void>;
   removeProfile: (profileId: string) => Promise<void>;
@@ -47,9 +48,9 @@ export const useProfiles = (
     return unsubscribe;
   }, [uid, gameId]);
 
-  const createProfile = async (name: string): Promise<void> => {
+  const createProfile = async (name: string, extra?: { params?: GameParam[]; notes?: string; tags?: string[]; files?: GameFile[]; archives?: DropboxArchive[] }): Promise<void> => {
     if (!uid || !gameId) return;
-    await addProfile(uid, gameId, name);
+    await addProfile(uid, gameId, name, extra);
   };
 
   const editProfile = async (
@@ -60,6 +61,7 @@ export const useProfiles = (
       notes?: string;
       tags?: string[];
       files?: GameFile[];
+      archives?: DropboxArchive[];
     }
   ): Promise<void> => {
     if (!uid || !gameId) return;

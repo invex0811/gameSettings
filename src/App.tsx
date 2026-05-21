@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useGames } from './hooks/useGames';
 import { useProfiles } from './hooks/useProfiles';
 import { getAllGamesWithProfiles } from './firebase/firestore';
+import { handleDropboxCallback } from './dropbox/auth';
 import { LoginPage } from './components/Auth/LoginPage';
 import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
@@ -11,6 +12,12 @@ import { EmptyState } from './components/Layout/EmptyState';
 
 function App() {
   const { user, loading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('code')) {
+      handleDropboxCallback();
+    }
+  }, []);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
 
   const { games, loading: gamesLoading, createGame, editGame, removeGame } = useGames(
