@@ -38,17 +38,22 @@ export const Modal: React.FC<ModalProps> = ({
       aria-modal="true"
     >
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/75 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
-        className={`relative w-full ${maxWidth} bg-gray-800 rounded-xl shadow-2xl border border-gray-700 flex flex-col max-h-[90vh]`}
+        className={`relative w-full ${maxWidth} bg-pd-surface rounded-xl shadow-2xl border border-pd-b2 flex flex-col max-h-[90vh] overflow-hidden`}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700 shrink-0">
-          <h2 className="text-lg font-semibold text-white">{title}</h2>
+        {/* Gradient top accent line */}
+        <div
+          className="absolute top-0 left-0 right-0 h-px z-10"
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.6), transparent)' }}
+        />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-pd-b1 shrink-0">
+          <h2 className="text-base font-bold text-white tracking-tight">{title}</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors rounded-lg p-1 hover:bg-gray-700"
+            className="text-slate-600 hover:text-slate-200 transition-colors rounded-lg p-1 hover:bg-pd-s2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

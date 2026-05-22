@@ -117,19 +117,22 @@ export const ProfileList: React.FC<ProfileListProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 overflow-hidden flex flex-col bg-pd-bg">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-pd-b1 shrink-0">
         <div className="flex items-center gap-3">
           <GameIcon
             iconUrl={game.iconUrl}
             color={game.color}
             name={game.name}
-            className="w-11 h-11 rounded-xl shrink-0 shadow-lg object-cover"
+            className="w-11 h-11 rounded-lg shrink-0 shadow-lg object-cover border border-pd-b2"
           />
           <div>
-            <h1 className="text-xl font-bold text-white">{game.name}</h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-[0.12em] mb-0.5">
+              Active Game
+            </p>
+            <h1 className="text-xl font-extrabold text-white tracking-tight">{game.name}</h1>
+            <p className="text-xs text-slate-600">
               {activeTags.length > 0
                 ? `${filteredProfiles.length} of ${profiles.length} profiles`
                 : `${profiles.length} profile${profiles.length !== 1 ? 's' : ''}`}
@@ -147,40 +150,40 @@ export const ProfileList: React.FC<ProfileListProps> = ({
             }}
           >
             {exporting ? (
-              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
               </svg>
             ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
             )}
             Export ZIP
           </Button>
           <Button variant="primary" size="sm" onClick={openNew}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
             </svg>
             New Profile
           </Button>
         </div>
       </div>
 
-      {/* Tag Filter */}
+      {/* Tag filter bar */}
       {allTags.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap mb-5 pb-5 border-b border-gray-800">
-          <span className="text-xs text-gray-500 shrink-0">Filter:</span>
+        <div className="flex items-center gap-2 flex-wrap px-6 py-2.5 border-b border-pd-b1 shrink-0">
+          <span className="text-[10px] font-semibold text-slate-700 uppercase tracking-wider shrink-0">Filter</span>
           {allTags.map((tag) => {
             const active = activeTags.includes(tag);
             return (
               <button
                 key={tag}
                 onClick={() => toggleTag(tag)}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-150 border ${
+                className={`px-2.5 py-1 rounded text-[10px] font-semibold uppercase tracking-wider transition-all duration-150 border ${
                   active
-                    ? 'bg-indigo-600 border-indigo-500 text-white'
-                    : 'bg-transparent border-gray-600 text-gray-400 hover:border-indigo-500 hover:text-indigo-300'
+                    ? 'bg-violet-950/50 border-violet-800/50 text-violet-400'
+                    : 'bg-transparent border-pd-b1 text-slate-600 hover:border-pd-b2 hover:text-slate-400'
                 }`}
               >
                 {tag}
@@ -190,7 +193,7 @@ export const ProfileList: React.FC<ProfileListProps> = ({
           {activeTags.length > 0 && (
             <button
               onClick={() => setActiveTags([])}
-              className="ml-1 text-xs text-gray-600 hover:text-gray-400 transition-colors"
+              className="ml-1 text-[10px] text-slate-700 hover:text-slate-500 transition-colors uppercase tracking-wider"
             >
               Clear
             </button>
@@ -198,46 +201,46 @@ export const ProfileList: React.FC<ProfileListProps> = ({
         </div>
       )}
 
-      {/* Profiles Grid */}
-      {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <div className="text-gray-600 text-sm">Loading profiles...</div>
-        </div>
-      ) : profiles.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="text-5xl mb-4">📋</div>
-          <h3 className="text-lg font-medium text-gray-400 mb-2">No profiles yet</h3>
-          <p className="text-sm text-gray-600 mb-4">Create your first settings profile for {game.name}</p>
-          <Button variant="primary" onClick={openNew}>
-            Create Profile
-          </Button>
-        </div>
-      ) : filteredProfiles.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="text-4xl mb-4">🏷️</div>
-          <h3 className="text-lg font-medium text-gray-400 mb-2">No profiles match</h3>
-          <p className="text-sm text-gray-600 mb-4">No profiles have the selected tags</p>
-          <button
-            onClick={() => setActiveTags([])}
-            className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
-          >
-            Clear filters
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredProfiles.map((profile) => (
-            <ProfileCard
-              key={profile.id}
-              profile={profile}
-              onView={() => setViewingProfile(profile)}
-              onEdit={() => { setIsCreating(false); setEditingProfile(profile); }}
-              onDelete={() => setConfirmProfile(profile)}
-              onCopy={() => onCopyProfile(profile)}
-            />
-          ))}
-        </div>
-      )}
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="text-slate-700 text-sm">Loading profiles...</div>
+          </div>
+        ) : profiles.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="text-4xl mb-4">📋</div>
+            <h3 className="text-base font-semibold text-slate-500 mb-2">No profiles yet</h3>
+            <p className="text-sm text-slate-700 mb-6">Create your first settings profile for {game.name}</p>
+            <Button variant="primary" onClick={openNew}>Create Profile</Button>
+          </div>
+        ) : filteredProfiles.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="text-4xl mb-4">🏷️</div>
+            <h3 className="text-base font-semibold text-slate-500 mb-2">No profiles match</h3>
+            <p className="text-sm text-slate-700 mb-4">No profiles have the selected tags</p>
+            <button
+              onClick={() => setActiveTags([])}
+              className="text-sm text-violet-400 hover:text-violet-300 transition-colors"
+            >
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {filteredProfiles.map((profile) => (
+              <ProfileCard
+                key={profile.id}
+                profile={profile}
+                onView={() => setViewingProfile(profile)}
+                onEdit={() => { setIsCreating(false); setEditingProfile(profile); }}
+                onDelete={() => setConfirmProfile(profile)}
+                onCopy={() => onCopyProfile(profile)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       <ProfileViewer
         isOpen={viewingProfile !== null}

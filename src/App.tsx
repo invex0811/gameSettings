@@ -29,10 +29,10 @@ function App() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-pd-bg flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">🎮</div>
-          <p className="text-gray-500 text-sm">Loading...</p>
+          <p className="text-slate-700 text-sm">Loading...</p>
         </div>
       </div>
     );

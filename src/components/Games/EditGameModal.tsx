@@ -117,27 +117,26 @@ export const EditGameModal: React.FC<EditGameModalProps> = ({ isOpen, game, onCl
     if (e.target.value.trim()) setIconUrl(null);
   };
 
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Game" maxWidth="max-w-lg">
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Preview */}
-        <div className="flex items-center gap-4 p-4 bg-gray-750 rounded-xl border border-gray-700">
+        <div className="flex items-center gap-4 p-4 bg-pd-s2 rounded-lg border border-pd-b1">
           <GameIcon
             iconUrl={previewIcon}
             color={color}
             name={name}
-            className="w-14 h-14 rounded-xl shrink-0 shadow-lg object-cover"
+            className="w-14 h-14 rounded-xl shrink-0 shadow-lg object-cover border border-pd-b2"
           />
           <div>
             <p className="text-white font-bold text-base">{name || 'Game Name'}</p>
-            <p className="text-gray-500 text-xs">{previewIcon ? 'Cover selected' : 'Preview'}</p>
+            <p className="text-slate-600 text-xs">{previewIcon ? 'Cover selected' : 'Preview'}</p>
           </div>
         </div>
 
         {/* Name with autocomplete */}
         <div className="relative">
-          <label className="block text-sm font-medium text-gray-300 mb-1.5">Game Name</label>
+          <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Game Name</label>
           <input
             type="text"
             value={name}
@@ -145,18 +144,18 @@ export const EditGameModal: React.FC<EditGameModalProps> = ({ isOpen, game, onCl
             onFocus={() => { if (blurTimerRef.current) clearTimeout(blurTimerRef.current); setShowDropdown(true); }}
             onBlur={() => { blurTimerRef.current = setTimeout(() => setShowDropdown(false), 150); }}
             placeholder="e.g. Counter-Strike 2"
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+            className="w-full bg-pd-s2 border border-pd-b1 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-700 focus:outline-none focus:ring-1 focus:ring-violet-700 focus:border-violet-700 text-sm transition-colors"
             ref={nameInputRef}
             autoFocus
             autoComplete="off"
           />
           {dropdownVisible && (
             <div
-              className="fixed z-[200] bg-gray-800 border border-gray-700 rounded-lg shadow-xl overflow-y-auto"
+              className="fixed z-[200] bg-pd-surface border border-pd-b2 rounded-lg shadow-2xl overflow-y-auto"
               style={dropdownPos}
             >
               {searching ? (
-                <div className="flex items-center gap-2 px-3 py-3 text-sm text-gray-500">
+                <div className="flex items-center gap-2 px-3 py-3 text-sm text-slate-600">
                   <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 000 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
@@ -164,15 +163,15 @@ export const EditGameModal: React.FC<EditGameModalProps> = ({ isOpen, game, onCl
                   Searching...
                 </div>
               ) : suggestions.length === 0 ? (
-                <div className="px-3 py-3 text-sm text-gray-500">No results</div>
+                <div className="px-3 py-3 text-sm text-slate-600">No results</div>
               ) : (
                 suggestions.map((g) => (
                   <button key={g.name} type="button" onMouseDown={() => handleSelectSuggestion(g)}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-700 transition-colors">
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-pd-s2 transition-colors">
                     {g.iconUrl
                       ? <img src={g.iconUrl} alt={g.name} className="w-12 h-7 object-cover rounded shrink-0" />
-                      : <div className="w-12 h-7 rounded bg-gray-700 shrink-0" />}
-                    <span className="text-sm text-gray-200 truncate">{g.name}</span>
+                      : <div className="w-12 h-7 rounded bg-pd-s3 shrink-0" />}
+                    <span className="text-sm text-slate-300 truncate">{g.name}</span>
                   </button>
                 ))
               )}
@@ -183,7 +182,7 @@ export const EditGameModal: React.FC<EditGameModalProps> = ({ isOpen, game, onCl
         {/* Image gallery */}
         {galleryImages.length > 0 && (
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Choose Cover</label>
+            <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-2">Choose Cover</label>
             <div className="flex gap-2 overflow-x-auto pb-1">
               {galleryImages.map((img) => (
                 <button
@@ -192,8 +191,8 @@ export const EditGameModal: React.FC<EditGameModalProps> = ({ isOpen, game, onCl
                   onClick={() => handleSelectGalleryImage(img)}
                   className={`shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
                     iconUrl === img && !customUrl.trim()
-                      ? 'border-indigo-500 scale-105'
-                      : 'border-transparent hover:border-gray-500'
+                      ? 'border-violet-500 scale-105'
+                      : 'border-transparent hover:border-pd-b2'
                   }`}
                 >
                   <img src={img} alt="" className="w-24 h-14 object-cover" />
@@ -205,27 +204,27 @@ export const EditGameModal: React.FC<EditGameModalProps> = ({ isOpen, game, onCl
 
         {/* Custom URL */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1.5">
+          <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
             Custom Image URL
-            <span className="ml-1.5 text-xs text-gray-500 font-normal">optional</span>
+            <span className="ml-1.5 text-slate-700 font-normal normal-case tracking-normal">optional</span>
           </label>
           <input
             type="url"
             value={customUrl}
             onChange={handleCustomUrlChange}
             placeholder="https://..."
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+            className="w-full bg-pd-s2 border border-pd-b1 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-700 focus:outline-none focus:ring-1 focus:ring-violet-700 focus:border-violet-700 text-sm transition-colors"
           />
         </div>
 
         {/* Color */}
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Color</label>
+          <label className="block text-[10px] font-semibold text-slate-600 uppercase tracking-wider mb-2">Color</label>
           <div className="flex items-center gap-2 flex-wrap">
             {PRESET_COLORS.map((c) => (
               <button key={c} type="button" onClick={() => setColor(c)}
-                className="w-7 h-7 rounded-lg transition-all hover:scale-110 shrink-0"
-                style={{ backgroundColor: c }}>
+                className="w-7 h-7 rounded-lg transition-all hover:scale-110 shrink-0 border-2"
+                style={{ backgroundColor: c, borderColor: color === c ? 'white' : 'transparent' }}>
                 {color === c && (
                   <svg className="w-4 h-4 mx-auto" style={{ color: c === '#ffffff' || c === '#eab308' ? '#000' : '#fff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -234,14 +233,14 @@ export const EditGameModal: React.FC<EditGameModalProps> = ({ isOpen, game, onCl
               </button>
             ))}
             <button type="button" onClick={() => colorInputRef.current?.click()}
-              className="w-7 h-7 rounded-lg border-2 border-dashed border-gray-500 hover:border-gray-300 flex items-center justify-center transition-colors shrink-0">
-              <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              className="w-7 h-7 rounded-lg border-2 border-dashed border-pd-b2 hover:border-slate-500 flex items-center justify-center transition-colors shrink-0">
+              <svg className="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
               </svg>
             </button>
             <input ref={colorInputRef} type="color" value={color} onChange={(e) => setColor(e.target.value)} className="sr-only" />
             {!PRESET_COLORS.includes(color) && (
-              <div className="w-7 h-7 rounded-lg ring-2 ring-white/30" style={{ backgroundColor: color }} />
+              <div className="w-7 h-7 rounded-lg ring-2 ring-white/20" style={{ backgroundColor: color }} />
             )}
           </div>
         </div>
