@@ -25,7 +25,13 @@ interface ModsPageProps {
 export const ModsPage: React.FC<ModsPageProps> = ({ user, games }) => {
   const [mods, setMods] = useState<Mod[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+
+  const getInitialGameId = (): string | null => {
+    const parts = window.location.hash.slice(1).split('/');
+    return parts[0] === 'mods' && parts.length >= 2 ? parts.slice(1).join('/') : null;
+  };
+
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(getInitialGameId);
   const [myModsOnly, setMyModsOnly] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -41,6 +47,27 @@ export const ModsPage: React.FC<ModsPageProps> = ({ user, games }) => {
     });
     return () => { clearTimeout(timer); unsub(); };
   }, []);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const parts = window.location.hash.slice(1).split('/');
+      if (parts[0] === 'mods') {
+        setSelectedGameId(parts.length >= 2 ? parts.slice(1).join('/') : null);
+      }
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  const selectGame = (gameId: string) => {
+    setSelectedGameId(gameId);
+    window.location.hash = `mods/${gameId}`;
+  };
+
+  const goBack = () => {
+    setSelectedGameId(null);
+    window.location.hash = 'mods';
+  };
 
   const isGoogleUser = !!user && !user.isAnonymous;
   const isAdmin = isGoogleUser && !!ADMIN_UID && user!.uid === ADMIN_UID;
@@ -99,7 +126,7 @@ export const ModsPage: React.FC<ModsPageProps> = ({ user, games }) => {
       <div className="flex-1 overflow-hidden flex flex-col bg-pd-bg">
         <div className="px-6 py-4 border-b border-pd-b1 flex items-center gap-4 shrink-0">
           <button
-            onClick={() => setSelectedGameId(null)}
+            onClick={goBack}
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-pd-b1 bg-pd-s2 text-slate-300 hover:text-white hover:border-pd-b2 hover:bg-pd-s3 text-xs font-semibold transition-all duration-150"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -241,7 +268,7 @@ export const ModsPage: React.FC<ModsPageProps> = ({ user, games }) => {
             {modGames.map((game) => (
               <button
                 key={game.gameId}
-                onClick={() => setSelectedGameId(game.gameId)}
+                onClick={() => selectGame(game.gameId)}
                 className="group relative aspect-video rounded-lg overflow-hidden cursor-pointer focus:outline-none border border-pd-b1 bg-pd-s2 transition-all duration-300 hover:-translate-y-1"
                 style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}
                 onMouseEnter={(e) => {

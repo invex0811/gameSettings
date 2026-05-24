@@ -13,9 +13,14 @@ import { ModsPage } from './components/Mods/ModsPage';
 
 type AppView = 'settings' | 'mods';
 
+const getInitialView = (): AppView => {
+  const hash = window.location.hash.slice(1);
+  return hash.startsWith('mods') ? 'mods' : 'settings';
+};
+
 function App() {
   const { user, loading: authLoading } = useAuth();
-  const [view, setView] = useState<AppView>('settings');
+  const [view, setView] = useState<AppView>(getInitialView);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -23,6 +28,20 @@ function App() {
       handleDropboxCallback();
     }
   }, []);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const hash = window.location.hash.slice(1);
+      setView(hash.startsWith('mods') ? 'mods' : 'settings');
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  const handleViewChange = (v: AppView) => {
+    setView(v);
+    window.location.hash = v;
+  };
 
   const isGoogleUser = !!user && !user.isAnonymous;
 
@@ -56,7 +75,7 @@ function App() {
       <Header
         user={user}
         view={view}
-        onViewChange={setView}
+        onViewChange={handleViewChange}
         onExportAll={handleExportAll}
         onHome={() => setSelectedGameId(null)}
       />
