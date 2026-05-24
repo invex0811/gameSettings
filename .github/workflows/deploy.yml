@@ -39,6 +39,8 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_DROPBOX_APP_KEY: ${{ secrets.VITE_DROPBOX_APP_KEY }}
           VITE_RAWG_API_KEY: ${{ secrets.VITE_RAWG_API_KEY }}
+          VITE_DROPBOX_MOD_REFRESH_TOKEN: ${{ secrets.VITE_DROPBOX_MOD_REFRESH_TOKEN }}
+          VITE_ADMIN_UID: ${{ secrets.VITE_ADMIN_UID }}
 
       - uses: actions/configure-pages@v5
 
