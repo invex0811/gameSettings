@@ -9,23 +9,29 @@ import { Header } from './components/Layout/Header';
 import { Sidebar } from './components/Layout/Sidebar';
 import { ProfileList } from './components/Profiles/ProfileList';
 import { EmptyState } from './components/Layout/EmptyState';
+import { ModsPage } from './components/Mods/ModsPage';
+
+type AppView = 'settings' | 'mods';
 
 function App() {
   const { user, loading: authLoading } = useAuth();
+  const [view, setView] = useState<AppView>('settings');
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('code')) {
       handleDropboxCallback();
     }
   }, []);
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+
+  const isGoogleUser = !!user && !user.isAnonymous;
 
   const { games, loading: gamesLoading, profileCounts, createGame, editGame, removeGame } = useGames(
-    user?.uid ?? null
+    isGoogleUser ? user.uid : null
   );
 
   const { profiles, loading: profilesLoading, createProfile, editProfile, removeProfile, duplicateProfile } =
-    useProfiles(user?.uid ?? null, selectedGameId);
+    useProfiles(isGoogleUser ? user.uid : null, selectedGameId);
 
   if (authLoading) {
     return (
@@ -38,48 +44,58 @@ function App() {
     );
   }
 
-  if (!user) {
-    return <LoginPage />;
-  }
-
   const selectedGame = games.find((g) => g.id === selectedGameId) ?? null;
 
   const handleExportAll = async () => {
-    if (!user) return;
+    if (!isGoogleUser) return;
     await exportAllAsZip(user.uid);
   };
 
   return (
-    <div className="h-screen bg-gray-900 flex flex-col overflow-hidden">
-      <Header user={user} onExportAll={handleExportAll} onHome={() => setSelectedGameId(null)} />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          games={games}
-          selectedGameId={selectedGameId}
-          onSelectGame={setSelectedGameId}
-          onDeleteGame={removeGame}
-          onAddGame={createGame}
-          onEditGame={editGame}
-          loading={gamesLoading}
-        />
+    <div className="h-screen bg-pd-bg flex flex-col overflow-hidden">
+      <Header
+        user={user}
+        view={view}
+        onViewChange={setView}
+        onExportAll={handleExportAll}
+        onHome={() => setSelectedGameId(null)}
+      />
 
-        <main className="flex-1 overflow-hidden flex">
-          {selectedGame ? (
-            <ProfileList
-              game={selectedGame}
-              profiles={profiles}
-              loading={profilesLoading}
-              uid={user.uid}
-              onCreateProfile={createProfile}
-              onEditProfile={editProfile}
-              onDeleteProfile={removeProfile}
-              onCopyProfile={duplicateProfile}
-            />
-          ) : (
-            <EmptyState games={games} profileCounts={profileCounts} onSelectGame={setSelectedGameId} />
-          )}
-        </main>
-      </div>
+      {view === 'mods' ? (
+        <div className="flex flex-1 overflow-hidden">
+          <ModsPage user={user} games={games} />
+        </div>
+      ) : !isGoogleUser ? (
+        <LoginPage />
+      ) : (
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar
+            games={games}
+            selectedGameId={selectedGameId}
+            onSelectGame={setSelectedGameId}
+            onDeleteGame={removeGame}
+            onAddGame={createGame}
+            onEditGame={editGame}
+            loading={gamesLoading}
+          />
+          <main className="flex-1 overflow-hidden flex">
+            {selectedGame ? (
+              <ProfileList
+                game={selectedGame}
+                profiles={profiles}
+                loading={profilesLoading}
+                uid={user.uid}
+                onCreateProfile={createProfile}
+                onEditProfile={editProfile}
+                onDeleteProfile={removeProfile}
+                onCopyProfile={duplicateProfile}
+              />
+            ) : (
+              <EmptyState games={games} profileCounts={profileCounts} onSelectGame={setSelectedGameId} />
+            )}
+          </main>
+        </div>
+      )}
     </div>
   );
 }

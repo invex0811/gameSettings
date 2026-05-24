@@ -39,6 +39,20 @@ export interface Profile {
   updatedAt: Timestamp;
 }
 
+export interface Mod {
+  id: string;
+  gameId: string;
+  gameName: string;
+  gameIconUrl?: string;
+  modIconUrl?: string;
+  name: string;
+  description: string;
+  dropboxPath: string;
+  size: number;
+  uploadedAt: Timestamp;
+  uploadedBy: string | null;
+}
+
 export interface User {
   uid: string;
   email: string | null;

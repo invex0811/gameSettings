@@ -2,6 +2,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut as firebaseSignOut,
+  signInAnonymously as firebaseSignInAnonymously,
   onAuthStateChanged,
   User,
 } from 'firebase/auth';
@@ -11,6 +12,10 @@ const googleProvider = new GoogleAuthProvider();
 
 export const signInWithGoogle = async (): Promise<void> => {
   await signInWithPopup(auth, googleProvider);
+};
+
+export const signInAnonymously = async (): Promise<void> => {
+  await firebaseSignInAnonymously(auth);
 };
 
 export const signOut = async (): Promise<void> => {

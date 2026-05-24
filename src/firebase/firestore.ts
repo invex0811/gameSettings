@@ -15,7 +15,7 @@ import {
   QuerySnapshot,
 } from 'firebase/firestore';
 import { db } from './config';
-import { Game, Profile, GameParam, GameFile, DropboxArchive } from '../types';
+import { Game, Profile, GameParam, GameFile, DropboxArchive, Mod } from '../types';
 
 // ---- Games ----
 
@@ -174,6 +174,44 @@ export const getAllGamesWithProfiles = async (uid: string) => {
     })
   );
   return result;
+};
+
+// ---- Mods (public collection) ----
+
+export const modsCollection = () => collection(db, 'mods');
+
+export const subscribeToMods = (
+  callback: (mods: Mod[]) => void
+): Unsubscribe => {
+  const q = query(modsCollection(), orderBy('uploadedAt', 'desc'));
+  return onSnapshot(q, (snap: QuerySnapshot<DocumentData>) => {
+    const mods: Mod[] = snap.docs.map((d) => ({
+      id: d.id,
+      ...(d.data() as Omit<Mod, 'id'>),
+    }));
+    callback(mods);
+  });
+};
+
+export const addMod = async (
+  data: Omit<Mod, 'id' | 'uploadedAt'>
+): Promise<string> => {
+  const ref = await addDoc(modsCollection(), {
+    ...data,
+    uploadedAt: serverTimestamp(),
+  });
+  return ref.id;
+};
+
+export const deleteMod = async (modId: string): Promise<void> => {
+  await deleteDoc(doc(db, 'mods', modId));
+};
+
+export const updateMod = async (
+  modId: string,
+  data: { name?: string; description?: string; modIconUrl?: string | null }
+): Promise<void> => {
+  await updateDoc(doc(db, 'mods', modId), data);
 };
 
 export const subscribeToProfiles = (
