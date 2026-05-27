@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Game Settings — Glassmorphism Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --glass-bg: rgba(255,255,255,0.05);
+    --glass-border: rgba(255,255,255,0.10);
+    --glass-blur: blur(20px);
+    --accent: #818cf8;
+    --accent2: #6366f1;
+    --accent-glow: rgba(99,102,241,0.4);
+    --bg: #080b14;
+    --text: #f1f5f9;
+    --text-muted: #64748b;
+    --text-dim: #334155;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* === ANIMATED BACKGROUND === */
+  .bg-canvas {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,102,241,0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(139,92,246,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 50% 50%, rgba(30,27,75,0.9) 0%, transparent 70%),
+      linear-gradient(135deg, #060811 0%, #0a0d1a 50%, #080b14 100%);
+  }
+  .bg-canvas::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* === GLASS MIXIN === */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+  }
+  .glass-strong {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+
+  /* === LAYOUT === */
+  .app { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; }
+
+  /* === HEADER === */
+  header {
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px;
+    background: rgba(8,11,20,0.7);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    shrink-0: 1;
+    flex-shrink: 0;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 16px rgba(99,102,241,0.5);
+    font-size: 16px;
+  }
+  .logo-text { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; color: #f1f5f9; }
+  .logo-text span { color: var(--accent); }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .user-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 12px 5px 5px;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .user-pill:hover { background: rgba(255,255,255,0.07); }
+  .user-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: white;
+    box-shadow: 0 0 10px rgba(99,102,241,0.4);
+  }
+  .user-name { font-size: 13px; color: #94a3b8; }
+  .chevron { font-size: 10px; color: #475569; margin-left: 2px; }
+
+  /* === BODY === */
+  .body { display: flex; flex: 1; overflow: hidden; }
+
+  /* === SIDEBAR === */
+  aside {
+    width: 240px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    background: rgba(8,11,20,0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255,255,255,0.07);
+  }
+  .sidebar-top { padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .btn-add {
+    width: 100%;
+    padding: 9px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, rgba(99,102,241,0.9), rgba(139,92,246,0.9));
+    color: white;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.2s;
+    box-shadow: 0 0 20px rgba(99,102,241,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+    letter-spacing: 0.1px;
+  }
+  .btn-add:hover {
+    box-shadow: 0 0 30px rgba(99,102,241,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+    transform: translateY(-1px);
+  }
+
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    group: 1;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.05); }
+  .nav-item.active {
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.25);
+  }
+  .nav-item.active::before {
+    content: '';
+    position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 60%;
+    background: linear-gradient(#6366f1, #8b5cf6);
+    border-radius: 0 3px 3px 0;
+  }
+  .game-thumb {
+    width: 30px; height: 30px; border-radius: 7px;
+    object-fit: cover; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .game-thumb-color {
+    width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .nav-name { font-size: 13px; font-weight: 600; color: #cbd5e1; flex: 1; truncate: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-item.active .nav-name { color: white; }
+  .nav-actions { display: none; align-items: center; gap: 2px; }
+  .nav-item:hover .nav-actions { display: flex; }
+  .nav-btn { padding: 4px; border-radius: 6px; border: none; background: transparent; cursor: pointer; color: #475569; transition: all 0.15s; font-size: 12px; }
+  .nav-btn:hover { color: #f59e0b; background: rgba(245,158,11,0.15); }
+  .nav-btn.del:hover { color: #f87171; background: rgba(248,113,113,0.15); }
+
+  /* === MAIN === */
+  main { flex: 1; overflow-y: auto; position: relative; }
+
+  /* === LIBRARY HEADER === */
+  .library-header {
+    padding: 24px 28px 0;
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+  .library-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: white; }
+  .library-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+  .badge-count {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.25);
+    font-size: 12px; font-weight: 600; color: var(--accent);
+  }
+
+  /* === GAME GRID === */
+  .game-grid { padding: 20px 28px 28px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  .game-card {
+    aspect-ratio: 16/9;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .game-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(99,102,241,0.4);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.2);
+  }
+  .game-card:hover .card-img { transform: scale(1.1); }
+  .game-card:hover .card-hover-pill { opacity: 1; }
+  .game-card:hover .card-overlay { background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, rgba(99,102,241,0.15) 100%); }
+
+  .card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .card-color { position: absolute; inset: 0; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, transparent 100%); transition: background 0.3s; }
+
+  .card-badge {
+    position: absolute; top: 10px; right: 10px;
+    display: flex; align-items: center; gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    font-size: 11px; font-weight: 600; color: #94a3b8;
+  }
+  .card-bottom { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 14px; }
+  .card-name { font-size: 14px; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-profiles { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .card-hover-pill {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .pill {
+    padding: 6px 16px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.2);
+    font-size: 13px; font-weight: 600; color: white;
+    letter-spacing: 0.2px;
+  }
+
+  /* === PROFILE VIEW (right panel) === */
+  .profile-panel {
+    display: flex; flex-direction: column; height: 100%;
+    background: transparent;
+  }
+  .profile-header {
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex; align-items: center; gap: 16px;
+    flex-shrink: 0;
+  }
+  .game-hero-thumb {
+    width: 52px; height: 52px; border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+  .game-hero-color { width: 52px; height: 52px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+  .game-hero-info { flex: 1; }
+  .game-hero-name { font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.3px; }
+  .game-hero-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .profile-header-actions { display: flex; align-items: center; gap: 8px; }
+  .btn-export {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 9px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #94a3b8; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-export:hover { background: rgba(255,255,255,0.1); color: white; }
+  .btn-new {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 9px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.85), rgba(139,92,246,0.85));
+    border: none;
+    color: white; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 0 16px rgba(99,102,241,0.3);
+  }
+  .btn-new:hover { box-shadow: 0 0 24px rgba(99,102,241,0.5); transform: translateY(-1px); }
+
+  /* === FILTERS === */
+  .filter-bar {
+    padding: 10px 28px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .filter-tag {
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: #64748b;
+  }
+  .filter-tag.active {
+    background: rgba(99,102,241,0.2);
+    border-color: rgba(99,102,241,0.4);
+    color: var(--accent);
+  }
+  .filter-tag:hover { color: white; border-color: rgba(255,255,255,0.2); }
+
+  /* === PROFILE CARDS GRID === */
+  .profile-grid { padding: 20px 28px 28px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; overflow-y: auto; }
+
+  .profile-card {
+    border-radius: 14px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .profile-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .profile-card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(99,102,241,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(99,102,241,0.15);
+  }
+  .profile-card:hover .pcard-actions { opacity: 1; }
+
+  .pcard-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+  .pcard-name { font-size: 14px; font-weight: 700; color: white; }
+  .pcard-actions {
+    display: flex; align-items: center; gap: 2px;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .pcard-btn { padding: 4px; border-radius: 6px; border: none; background: transparent; cursor: pointer; color: #475569; transition: all 0.15s; font-size: 12px; }
+  .pcard-btn:hover.dl { color: #22d3ee; background: rgba(34,211,238,0.12); }
+  .pcard-btn:hover.dup { color: #818cf8; background: rgba(129,140,248,0.12); }
+  .pcard-btn:hover.edit { color: #f59e0b; background: rgba(245,158,11,0.12); }
+  .pcard-btn:hover.del { color: #f87171; background: rgba(248,113,113,0.12); }
+
+  .pcard-params { margin-bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
+  .param-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+  .param-key { font-family: monospace; color: #475569; width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .param-val { font-family: monospace; color: #94a3b8; }
+
+  .pcard-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag {
+    padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 500;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.25);
+    color: #818cf8;
+  }
+  .tag.green { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); color: #4ade80; }
+  .tag.amber { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.25); color: #fbbf24; }
+
+  .pcard-footer { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+  .pcard-meta { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #475569; }
+
+  /* === TABS === */
+  .screen-tabs { display: flex; gap: 8px; margin: 0 0 20px; }
+  .tab-btn {
+    padding: 7px 16px; border-radius: 20px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: #64748b; transition: all 0.15s;
+  }
+  .tab-btn.active { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); color: var(--accent); }
+  .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.08); color: white; }
+
+  /* === NAV SCREENS === */
+  .screen { display: none; height: 100%; flex-direction: column; }
+  .screen.active { display: flex; }
+
+  /* NAV CONTROLS */
+  .nav-controls {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(8,11,20,0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 24px;
+    padding: 8px 16px;
+    z-index: 999;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .nav-label { font-size: 11px; color: #475569; margin-right: 4px; }
+  .nav-pill-btn {
+    padding: 5px 14px; border-radius: 16px;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; border: none;
+    background: rgba(255,255,255,0.06);
+    color: #64748b; transition: all 0.15s;
+  }
+  .nav-pill-btn:hover { background: rgba(255,255,255,0.12); color: white; }
+  .nav-pill-btn.current { background: rgba(99,102,241,0.25); color: var(--accent); border: 1px solid rgba(99,102,241,0.3); }
+
+  /* === LOGIN SCREEN === */
+  .login-screen {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(ellipse 80% 60% at 30% 20%, rgba(99,102,241,0.2) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 70% 80%, rgba(139,92,246,0.15) 0%, transparent 55%),
+      #080b14;
+  }
+  .login-card {
+    width: 380px; padding: 40px;
+    border-radius: 24px;
+    text-align: center;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+  }
+  .login-logo { font-size: 48px; margin-bottom: 16px; display: block; }
+  .login-logo-icon {
+    width: 64px; height: 64px; border-radius: 18px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 40px rgba(99,102,241,0.5);
+    font-size: 28px;
+  }
+  .login-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .login-sub { font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 32px; }
+  .btn-google {
+    width: 100%; padding: 13px;
+    border-radius: 12px; border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.07);
+    color: white; font-size: 14px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: all 0.2s;
+    letter-spacing: 0.1px;
+  }
+  .btn-google:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .google-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+  /* === MODAL === */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal-card {
+    width: 440px; border-radius: 20px; padding: 28px;
+    background: rgba(12,16,28,0.95);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+    transform: translateY(16px) scale(0.97); transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  }
+  .modal-overlay.show .modal-card { transform: translateY(0) scale(1); }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .modal-input {
+    width: 100%; padding: 10px 14px; border-radius: 10px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    color: white; font-size: 14px; outline: none; transition: border-color 0.15s;
+    margin-bottom: 14px;
+  }
+  .modal-input:focus { border-color: rgba(99,102,241,0.5); background: rgba(99,102,241,0.06); }
+  .modal-input::placeholder { color: #475569; }
+  .modal-label { font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px; display: block; }
+  .color-swatches { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 16px; }
+  .swatch { width: 26px; height: 26px; border-radius: 7px; cursor: pointer; transition: all 0.15s; border: 2px solid transparent; }
+  .swatch.sel { border-color: white; transform: scale(1.15); box-shadow: 0 0 0 2px rgba(99,102,241,0.5); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+  .btn-cancel {
+    padding: 8px 18px; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-cancel:hover { background: rgba(255,255,255,0.1); color: white; }
+  .btn-save {
+    padding: 8px 18px; border-radius: 9px; border: none;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 16px rgba(99,102,241,0.3);
+  }
+  .btn-save:hover { box-shadow: 0 0 24px rgba(99,102,241,0.5); transform: translateY(-1px); }
+
+  /* === EMPTY STATE === */
+  .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px; position: relative; }
+  .empty-glow { position: absolute; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%); pointer-events: none; }
+  .empty-icon { width: 72px; height: 72px; border-radius: 20px; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 20px; box-shadow: 0 0 40px rgba(99,102,241,0.2); }
+  .empty-title { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 8px; }
+  .empty-sub { font-size: 14px; color: #475569; text-align: center; max-width: 260px; line-height: 1.6; margin-bottom: 40px; }
+  .feature-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 400px; }
+  .feature-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+  .feature-icon { font-size: 20px; }
+  .feature-label { font-size: 12px; font-weight: 600; color: #94a3b8; }
+  .feature-desc { font-size: 11px; color: #334155; line-height: 1.4; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+  .sep { font-size: 11px; color: #1e293b; margin: 0 4px; }
+</style>
+</head>
+<body>
+
+<div class="bg-canvas"></div>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo-icon">🎮</div>
+    <h1 class="login-title">Game Settings</h1>
+    <p class="login-sub">Save, manage and export your game<br>configs across all your titles</p>
+    <button class="btn-google" onclick="showApp()">
+      <svg class="google-icon" viewBox="0 0 24 24" fill="none">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="appScreen" style="display:none">
+  <header>
+    <div class="logo" onclick="switchScreen('library')">
+      <div class="logo-icon">🎮</div>
+      <div class="logo-text">Game<span>Settings</span></div>
+    </div>
+    <div class="header-right">
+      <div class="user-pill">
+        <div class="user-avatar">I</div>
+        <span class="user-name">ighor.kesua37</span>
+        <span class="chevron">▾</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="body">
+    <!-- SIDEBAR -->
+    <aside>
+      <div class="sidebar-top">
+        <button class="btn-add" onclick="showModal('addGame')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4v16M4 12h16"/></svg>
+          Add Game
+        </button>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-item" onclick="switchScreen('library')">
+          <div class="game-thumb-color" style="background:linear-gradient(135deg,#3b82f6,#6366f1)"></div>
+          <span class="nav-name">Cyberpunk 2077</span>
+          <div class="nav-actions">
+            <button class="nav-btn" title="Edit">✎</button>
+            <button class="nav-btn del" title="Delete">✕</button>
+          </div>
+        </div>
+        <div class="nav-item active" onclick="switchScreen('profiles')">
+          <div class="game-thumb-color" style="background:linear-gradient(135deg,#f59e0b,#ef4444)"></div>
+          <span class="nav-name">Elden Ring</span>
+          <div class="nav-actions">
+            <button class="nav-btn" title="Edit">✎</button>
+            <button class="nav-btn del" title="Delete">✕</button>
+          </div>
+        </div>
+        <div class="nav-item" onclick="switchScreen('library')">
+          <div class="game-thumb-color" style="background:linear-gradient(135deg,#10b981,#3b82f6)"></div>
+          <span class="nav-name">Valorant</span>
+          <div class="nav-actions">
+            <button class="nav-btn" title="Edit">✎</button>
+            <button class="nav-btn del" title="Delete">✕</button>
+          </div>
+        </div>
+        <div class="nav-item" onclick="switchScreen('library')">
+          <div class="game-thumb-color" style="background:linear-gradient(135deg,#8b5cf6,#ec4899)"></div>
+          <span class="nav-name">The Witcher 3</span>
+          <div class="nav-actions">
+            <button class="nav-btn" title="Edit">✎</button>
+            <button class="nav-btn del" title="Delete">✕</button>
+          </div>
+        </div>
+        <div class="nav-item" onclick="switchScreen('library')">
+          <div class="game-thumb-color" style="background:linear-gradient(135deg,#06b6d4,#6366f1)"></div>
+          <span class="nav-name">CS2</span>
+          <div class="nav-actions">
+            <button class="nav-btn" title="Edit">✎</button>
+            <button class="nav-btn del" title="Delete">✕</button>
+          </div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main>
+      <!-- SCREEN: LIBRARY -->
+      <div class="screen active" id="screen-library" style="overflow-y:auto">
+        <div class="library-header">
+          <div>
+            <h1 class="library-title">Your Library</h1>
+            <p class="library-sub">5 games · 12 profiles total</p>
+          </div>
+          <span class="badge-count">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-6 4 2 7-6-4-6 4 2-7-6-4h7z"/></svg>
+            All Time Configs
+          </span>
+        </div>
+
+        <div class="game-grid">
+          <div class="game-card" onclick="switchScreen('profiles')">
+            <div class="card-color" style="background:linear-gradient(135deg,#1e1b4b,#3730a3,#4338ca)"></div>
+            <div class="card-overlay"></div>
+            <div class="card-badge">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+              3
+            </div>
+            <div class="card-bottom"><div class="card-name">Cyberpunk 2077</div><div class="card-profiles">3 profiles</div></div>
+            <div class="card-hover-pill"><div class="pill">Open →</div></div>
+          </div>
+
+          <div class="game-card" onclick="switchScreen('profiles')">
+            <div class="card-color" style="background:linear-gradient(135deg,#451a03,#92400e,#b45309)"></div>
+            <div class="card-overlay"></div>
+            <div class="card-badge">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+              4
+            </div>
+            <div class="card-bottom"><div class="card-name">Elden Ring</div><div class="card-profiles">4 profiles</div></div>
+            <div class="card-hover-pill"><div class="pill">Open →</div></div>
+          </div>
+
+          <div class="game-card" onclick="switchScreen('profiles')">
+            <div class="card-color" style="background:linear-gradient(135deg,#052e16,#14532d,#15803d)"></div>
+            <div class="card-overlay"></div>
+            <div class="card-badge">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+              2
+            </div>
+            <div class="card-bottom"><div class="card-name">Valorant</div><div class="card-profiles">2 profiles</div></div>
+            <div class="card-hover-pill"><div class="pill">Open →</div></div>
+          </div>
+
+          <div class="game-card" onclick="switchScreen('profiles')">
+            <div class="card-color" style="background:linear-gradient(135deg,#2e1065,#5b21b6,#7c3aed)"></div>
+            <div class="card-overlay"></div>
+            <div class="card-badge">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+              1
+            </div>
+            <div class="card-bottom"><div class="card-name">The Witcher 3</div><div class="card-profiles">1 profile</div></div>
+            <div class="card-hover-pill"><div class="pill">Open →</div></div>
+          </div>
+
+          <div class="game-card" onclick="switchScreen('profiles')">
+            <div class="card-color" style="background:linear-gradient(135deg,#082f49,#0c4a6e,#0369a1)"></div>
+            <div class="card-overlay"></div>
+            <div class="card-badge">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+              2
+            </div>
+            <div class="card-bottom"><div class="card-name">CS2</div><div class="card-profiles">2 profiles</div></div>
+            <div class="card-hover-pill"><div class="pill">Open →</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN: PROFILES -->
+      <div class="screen" id="screen-profiles" style="overflow:hidden; flex-direction:column">
+        <div class="profile-header">
+          <div class="game-hero-color" style="background:linear-gradient(135deg,#451a03,#b45309)"></div>
+          <div class="game-hero-info">
+            <div class="game-hero-name">Elden Ring</div>
+            <div class="game-hero-sub">4 profiles · Last updated today</div>
+          </div>
+          <div class="profile-header-actions">
+            <button class="btn-export">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Export ZIP
+            </button>
+            <button class="btn-new" onclick="showModal('addProfile')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 4v16M4 12h16"/></svg>
+              New Profile
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <span style="font-size:12px;color:#475569;margin-right:4px">Filter:</span>
+          <div class="filter-tag active">All</div>
+          <div class="filter-tag">Ultra</div>
+          <div class="filter-tag">Competitive</div>
+          <div class="filter-tag">Screenshot</div>
+        </div>
+
+        <div class="profile-grid" style="overflow-y:auto; flex:1">
+          <!-- Card 1 -->
+          <div class="profile-card">
+            <div class="pcard-top">
+              <div class="pcard-name">Ultra Quality</div>
+              <div class="pcard-actions">
+                <button class="pcard-btn dl" title="Download">⬇</button>
+                <button class="pcard-btn dup" title="Duplicate">⧉</button>
+                <button class="pcard-btn edit" title="Edit">✎</button>
+                <button class="pcard-btn del" title="Delete">✕</button>
+              </div>
+            </div>
+            <div class="pcard-params">
+              <div class="param-row"><span class="param-key">Resolution</span><span class="param-val">2560×1440</span></div>
+              <div class="param-row"><span class="param-key">Shadows</span><span class="param-val">Ultra</span></div>
+              <div class="param-row"><span class="param-key">Texture</span><span class="param-val">High</span></div>
+              <div class="param-row"><span class="param-key">DLSS</span><span class="param-val">Quality</span></div>
+            </div>
+            <div class="pcard-tags">
+              <span class="tag">Ultra</span>
+              <span class="tag green">1440p</span>
+            </div>
+            <div class="pcard-footer">
+              <span class="pcard-meta">📎 2 files</span>
+              <span class="pcard-meta" style="margin-left:auto;color:#334155">2 days ago</span>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="profile-card">
+            <div class="pcard-top">
+              <div class="pcard-name">Competitive Low</div>
+              <div class="pcard-actions">
+                <button class="pcard-btn dl" title="Download">⬇</button>
+                <button class="pcard-btn dup" title="Duplicate">⧉</button>
+                <button class="pcard-btn edit" title="Edit">✎</button>
+                <button class="pcard-btn del" title="Delete">✕</button>
+              </div>
+            </div>
+            <div class="pcard-params">
+              <div class="param-row"><span class="param-key">Resolution</span><span class="param-val">1920×1080</span></div>
+              <div class="param-row"><span class="param-key">Shadows</span><span class="param-val">Low</span></div>
+              <div class="param-row"><span class="param-key">FPS Limit</span><span class="param-val">144</span></div>
+              <div class="param-row"><span class="param-key">VSync</span><span class="param-val">Off</span></div>
+            </div>
+            <div class="pcard-tags">
+              <span class="tag amber">Competitive</span>
+              <span class="tag">144fps</span>
+            </div>
+            <div class="pcard-footer">
+              <span class="pcard-meta">📎 1 file</span>
+              <span class="pcard-meta" style="margin-left:auto;color:#334155">5 days ago</span>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="profile-card">
+            <div class="pcard-top">
+              <div class="pcard-name">Screenshot Mode</div>
+              <div class="pcard-actions">
+                <button class="pcard-btn dl" title="Download">⬇</button>
+                <button class="pcard-btn dup" title="Duplicate">⧉</button>
+                <button class="pcard-btn edit" title="Edit">✎</button>
+                <button class="pcard-btn del" title="Delete">✕</button>
+              </div>
+            </div>
+            <div class="pcard-params">
+              <div class="param-row"><span class="param-key">Resolution</span><span class="param-val">3840×2160</span></div>
+              <div class="param-row"><span class="param-key">RT</span><span class="param-val">Ultra</span></div>
+              <div class="param-row"><span class="param-key">Motion Blur</span><span class="param-val">Off</span></div>
+            </div>
+            <div class="pcard-tags">
+              <span class="tag green">Screenshot</span>
+              <span class="tag">4K</span>
+            </div>
+            <div class="pcard-footer">
+              <span class="pcard-meta">🗂 1 archive</span>
+              <span class="pcard-meta" style="margin-left:auto;color:#334155">1 week ago</span>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="profile-card">
+            <div class="pcard-top">
+              <div class="pcard-name">Balanced 60fps</div>
+              <div class="pcard-actions">
+                <button class="pcard-btn dl" title="Download">⬇</button>
+                <button class="pcard-btn dup" title="Duplicate">⧉</button>
+                <button class="pcard-btn edit" title="Edit">✎</button>
+                <button class="pcard-btn del" title="Delete">✕</button>
+              </div>
+            </div>
+            <div class="pcard-params">
+              <div class="param-row"><span class="param-key">Resolution</span><span class="param-val">1920×1080</span></div>
+              <div class="param-row"><span class="param-key">Shadows</span><span class="param-val">Medium</span></div>
+              <div class="param-row"><span class="param-key">FPS Limit</span><span class="param-val">60</span></div>
+            </div>
+            <div class="pcard-tags">
+              <span class="tag">Balanced</span>
+            </div>
+            <div class="pcard-footer">
+              <span class="pcard-meta" style="margin-left:auto;color:#334155">2 weeks ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN: EMPTY -->
+      <div class="screen" id="screen-empty">
+        <div class="empty-state">
+          <div class="empty-glow"></div>
+          <div class="empty-icon">🎮</div>
+          <h2 class="empty-title">Your Game Settings</h2>
+          <p class="empty-sub">Add your first game from the sidebar to start saving configs</p>
+          <div class="feature-cards">
+            <div class="feature-card"><div class="feature-icon">📋</div><div class="feature-label">Profiles</div><div class="feature-desc">Multiple configs per game</div></div>
+            <div class="feature-card"><div class="feature-icon">⚙️</div><div class="feature-label">Params</div><div class="feature-desc">Key-value settings table</div></div>
+            <div class="feature-card"><div class="feature-icon">📦</div><div class="feature-label">Export</div><div class="feature-desc">Download all as ZIP</div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ADD GAME MODAL -->
+<div class="modal-overlay" id="modal-addGame" onclick="closeModal('addGame')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-title">Add New Game</div>
+    <label class="modal-label">Game name</label>
+    <input class="modal-input" type="text" placeholder="e.g. Cyberpunk 2077" />
+    <label class="modal-label">Accent color</label>
+    <div class="color-swatches">
+      <div class="swatch sel" style="background:#6366f1"></div>
+      <div class="swatch" style="background:#3b82f6"></div>
+      <div class="swatch" style="background:#06b6d4"></div>
+      <div class="swatch" style="background:#10b981"></div>
+      <div class="swatch" style="background:#f59e0b"></div>
+      <div class="swatch" style="background:#ef4444"></div>
+      <div class="swatch" style="background:#ec4899"></div>
+      <div class="swatch" style="background:#8b5cf6"></div>
+      <div class="swatch" style="background:#14b8a6"></div>
+      <div class="swatch" style="background:#f97316"></div>
+      <div class="swatch" style="background:#84cc16"></div>
+      <div class="swatch" style="background:#64748b"></div>
+    </div>
+    <label class="modal-label">Cover image URL (optional)</label>
+    <input class="modal-input" type="text" placeholder="Paste URL or search RAWG..." />
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('addGame')">Cancel</button>
+      <button class="btn-save">Add Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PROFILE MODAL -->
+<div class="modal-overlay" id="modal-addProfile" onclick="closeModal('addProfile')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-title">New Profile</div>
+    <label class="modal-label">Profile name</label>
+    <input class="modal-input" type="text" placeholder="e.g. Ultra Quality" />
+    <label class="modal-label">Tags (optional)</label>
+    <input class="modal-input" type="text" placeholder="competitive, 1440p, low..." />
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('addProfile')">Cancel</button>
+      <button class="btn-save">Create Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV CONTROLS -->
+<div class="nav-controls">
+  <span class="nav-label">Preview:</span>
+  <button class="nav-pill-btn" onclick="showLogin()">Login</button>
+  <button class="nav-pill-btn" onclick="switchScreen('library')">Library</button>
+  <button class="nav-pill-btn current" onclick="switchScreen('profiles')">Profiles</button>
+  <button class="nav-pill-btn" onclick="switchScreen('empty')">Empty</button>
+  <span class="sep">|</span>
+  <button class="nav-pill-btn" onclick="showModal('addGame')">+ Game modal</button>
+  <button class="nav-pill-btn" onclick="showModal('addProfile')">+ Profile modal</button>
+</div>
+
+<script>
+  function showApp() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'flex';
+    switchScreen('profiles');
+  }
+
+  function showLogin() {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('appScreen').style.display = 'none';
+  }
+
+  function switchScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById('screen-' + name);
+    if (el) el.classList.add('active');
+
+    // update nav current
+    document.querySelectorAll('.nav-pill-btn').forEach(b => b.classList.remove('current'));
+    const btns = document.querySelectorAll('.nav-pill-btn');
+    btns.forEach(b => { if (b.textContent.toLowerCase().includes(name)) b.classList.add('current'); });
+
+    // sidebar active
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (name === 'profiles') {
+      const items = document.querySelectorAll('.nav-item');
+      if (items[1]) items[1].classList.add('active');
+    }
+  }
+
+  function showModal(id) {
+    document.getElementById('modal-' + id).classList.add('show');
+  }
+
+  function closeModal(id) {
+    document.getElementById('modal-' + id).classList.remove('show');
+  }
+
+  // color swatches
+  document.querySelectorAll('.swatch').forEach(sw => {
+    sw.addEventListener('click', function() {
+      this.closest('.color-swatches').querySelectorAll('.swatch').forEach(s => s.classList.remove('sel'));
+      this.classList.add('sel');
+    });
+  });
+
+  // ESC close modals
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+    }
+  });
+</script>
+</body>
+</html>

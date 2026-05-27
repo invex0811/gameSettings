@@ -16,6 +16,10 @@ interface AddModModalProps {
 }
 
 export const AddModModal: React.FC<AddModModalProps> = ({ isOpen, onClose, games, user, prefilledGame }) => {
+  const prefilledGameId = prefilledGame?.gameId;
+  const prefilledGameName = prefilledGame?.gameName;
+  const prefilledGameIconUrl = prefilledGame?.gameIconUrl;
+
   const [gameName, setGameName] = useState('');
   const [selectedGameId, setSelectedGameId] = useState('');
   const [gameIconUrl, setGameIconUrl] = useState<string | undefined>(undefined);
@@ -65,10 +69,10 @@ export const AddModModal: React.FC<AddModModalProps> = ({ isOpen, onClose, games
   }, [gameName]);
 
   useEffect(() => {
-    if (isOpen && prefilledGame) {
-      setGameName(prefilledGame.gameName);
-      setSelectedGameId(prefilledGame.gameId);
-      setGameIconUrl(prefilledGame.gameIconUrl);
+    if (isOpen && prefilledGameId && prefilledGameName) {
+      setGameName(prefilledGameName);
+      setSelectedGameId(prefilledGameId);
+      setGameIconUrl(prefilledGameIconUrl);
       setGalleryImages([]);
     }
     if (!isOpen) {
@@ -76,7 +80,7 @@ export const AddModModal: React.FC<AddModModalProps> = ({ isOpen, onClose, games
       setGalleryImages([]); setModIconUrl(''); setName(''); setDescription('');
       setFile(null); setError(''); setSuggestions([]); setShowDropdown(false);
     }
-  }, [isOpen]);
+  }, [isOpen, prefilledGameId, prefilledGameName, prefilledGameIconUrl]);
 
   const filteredUserGames = games.filter((g) =>
     g.name.toLowerCase().includes(gameName.toLowerCase())

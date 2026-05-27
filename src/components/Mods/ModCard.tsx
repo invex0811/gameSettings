@@ -16,11 +16,31 @@ const formatSize = (bytes: number) => {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 };
 
+const formatUploadedAt = (uploadedAt: Mod['uploadedAt'] | Date | string | null | undefined) => {
+  if (!uploadedAt) return 'Date pending';
+
+  const date =
+    uploadedAt instanceof Date
+      ? uploadedAt
+      : typeof uploadedAt === 'string'
+        ? new Date(uploadedAt)
+        : uploadedAt.toDate();
+
+  if (Number.isNaN(date.getTime())) return 'Date pending';
+
+  return new Intl.DateTimeFormat(undefined, {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+};
+
 export const ModCard: React.FC<ModCardProps> = ({ mod, canEdit, canDelete, onEdit, onDelete }) => {
   const [downloading, setDownloading] = useState(false);
   const [dlError, setDlError] = useState('');
 
   const coverUrl = mod.modIconUrl || mod.gameIconUrl;
+  const uploadedAtLabel = formatUploadedAt(mod.uploadedAt);
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -105,7 +125,10 @@ export const ModCard: React.FC<ModCardProps> = ({ mod, canEdit, canDelete, onEdi
         {dlError && <p className="text-[10px] text-red-400">{dlError}</p>}
 
         <div className="flex items-center justify-between pt-2 border-t border-pd-b1">
-          <span className="text-[10px] text-slate-700">{formatSize(mod.size)}</span>
+          <div className="min-w-0">
+            <p className="text-[10px] text-slate-700">{formatSize(mod.size)}</p>
+            <p className="text-[10px] text-slate-600 truncate">Added {uploadedAtLabel}</p>
+          </div>
           <button
             onClick={handleDownload}
             disabled={downloading}
