@@ -45,7 +45,7 @@ export const Header: React.FC<HeaderProps> = ({ user, view, onViewChange, onExpo
       />
 
       <button
-        onClick={() => { onViewChange('settings'); onHome(); }}
+        onClick={onHome}
         className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
       >
         <svg
@@ -65,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({ user, view, onViewChange, onExpo
       {/* Nav tabs */}
       <div className="flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
         <button
-          onClick={() => { onViewChange('settings'); onHome(); }}
+          onClick={onHome}
           className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 border ${
             view === 'settings'
               ? 'bg-violet-950/60 border-violet-800/60 text-violet-300'

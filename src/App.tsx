@@ -10,18 +10,33 @@ import { Sidebar } from './components/Layout/Sidebar';
 import { ProfileList } from './components/Profiles/ProfileList';
 import { EmptyState } from './components/Layout/EmptyState';
 import { ModsPage } from './components/Mods/ModsPage';
+import { decodeRoutePart, matchesGameRouteKey, toRouteSlug } from './utils/routes';
 
 type AppView = 'settings' | 'mods';
 
-const getInitialView = (): AppView => {
-  const hash = window.location.hash.slice(1);
-  return hash.startsWith('mods') ? 'mods' : 'settings';
+interface AppRoute {
+  view: AppView;
+  selectedGameKey: string | null;
+}
+
+const buildRouteHash = ({ view, selectedGameKey }: AppRoute): string =>
+  selectedGameKey ? `${view}/${encodeURIComponent(selectedGameKey)}` : view;
+
+const getRouteFromHash = (): AppRoute => {
+  const [hashView, ...hashRest] = window.location.hash.slice(1).split('/');
+  const view: AppView = hashView === 'mods' ? 'mods' : 'settings';
+  const routeId = hashRest.length > 0 ? decodeRoutePart(hashRest.join('/')) : null;
+
+  return {
+    view,
+    selectedGameKey: view === 'settings' && routeId ? routeId : null,
+  };
 };
 
 function App() {
   const { user, loading: authLoading } = useAuth();
-  const [view, setView] = useState<AppView>(getInitialView);
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  const [route, setRoute] = useState<AppRoute>(getRouteFromHash);
+  const { view, selectedGameKey } = route;
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('code')) {
@@ -31,16 +46,18 @@ function App() {
 
   useEffect(() => {
     const onHashChange = () => {
-      const hash = window.location.hash.slice(1);
-      setView(hash.startsWith('mods') ? 'mods' : 'settings');
+      setRoute(getRouteFromHash());
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  const handleViewChange = (v: AppView) => {
-    setView(v);
-    window.location.hash = v;
+  const navigateTo = (nextRoute: AppRoute) => {
+    const nextHash = buildRouteHash(nextRoute);
+    setRoute(nextRoute);
+    if (window.location.hash.slice(1) !== nextHash) {
+      window.location.hash = nextHash;
+    }
   };
 
   const isGoogleUser = !!user && !user.isAnonymous;
@@ -49,8 +66,31 @@ function App() {
     isGoogleUser ? user.uid : null
   );
 
+  const selectedGame = selectedGameKey
+    ? games.find((g) => matchesGameRouteKey(selectedGameKey, g.id, g.name)) ?? null
+    : null;
+  const selectedGameId = selectedGame?.id ?? null;
+
   const { profiles, loading: profilesLoading, createProfile, editProfile, removeProfile, duplicateProfile } =
     useProfiles(isGoogleUser ? user.uid : null, selectedGameId);
+
+  const handleViewChange = (v: AppView) => navigateTo({ view: v, selectedGameKey: null });
+  const handleSettingsHome = () => navigateTo({ view: 'settings', selectedGameKey: null });
+  const handleSelectGame = (gameId: string) => {
+    const game = games.find((g) => g.id === gameId);
+    navigateTo({ view: 'settings', selectedGameKey: game ? toRouteSlug(game.name) : gameId });
+  };
+
+  useEffect(() => {
+    if (view !== 'settings' || !selectedGame || !selectedGameKey) return;
+
+    const slug = toRouteSlug(selectedGame.name);
+    if (selectedGameKey === slug) return;
+
+    const nextHash = buildRouteHash({ view: 'settings', selectedGameKey: slug });
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#${nextHash}`);
+    setRoute({ view: 'settings', selectedGameKey: slug });
+  }, [selectedGame, selectedGameKey, view]);
 
   if (authLoading) {
     return (
@@ -62,8 +102,6 @@ function App() {
       </div>
     );
   }
-
-  const selectedGame = games.find((g) => g.id === selectedGameId) ?? null;
 
   const handleExportAll = async () => {
     if (!isGoogleUser) return;
@@ -77,7 +115,7 @@ function App() {
         view={view}
         onViewChange={handleViewChange}
         onExportAll={handleExportAll}
-        onHome={() => setSelectedGameId(null)}
+        onHome={handleSettingsHome}
       />
 
       {view === 'mods' ? (
@@ -91,7 +129,7 @@ function App() {
           <Sidebar
             games={games}
             selectedGameId={selectedGameId}
-            onSelectGame={setSelectedGameId}
+            onSelectGame={handleSelectGame}
             onDeleteGame={removeGame}
             onAddGame={createGame}
             onEditGame={editGame}
@@ -110,7 +148,7 @@ function App() {
                 onCopyProfile={duplicateProfile}
               />
             ) : (
-              <EmptyState games={games} profileCounts={profileCounts} onSelectGame={setSelectedGameId} />
+              <EmptyState games={games} profileCounts={profileCounts} onSelectGame={handleSelectGame} />
             )}
           </main>
         </div>

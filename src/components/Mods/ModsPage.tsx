@@ -7,6 +7,7 @@ import { AddModModal } from './AddModModal';
 import { EditModModal } from './EditModModal';
 import { AuthPromptModal } from './AuthPromptModal';
 import { ConfirmModal } from '../UI/ConfirmModal';
+import { decodeRoutePart, matchesGameRouteKey, toRouteSlug } from '../../utils/routes';
 
 const ADMIN_UID = import.meta.env.VITE_ADMIN_UID as string;
 
@@ -22,16 +23,18 @@ interface ModsPageProps {
   games: Game[];
 }
 
+const getModsGameKeyFromHash = (): string | null => {
+  const parts = window.location.hash.slice(1).split('/');
+  return parts[0] === 'mods' && parts.length >= 2
+    ? decodeRoutePart(parts.slice(1).join('/'))
+    : null;
+};
+
 export const ModsPage: React.FC<ModsPageProps> = ({ user, games }) => {
   const [mods, setMods] = useState<Mod[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const getInitialGameId = (): string | null => {
-    const parts = window.location.hash.slice(1).split('/');
-    return parts[0] === 'mods' && parts.length >= 2 ? parts.slice(1).join('/') : null;
-  };
-
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(getInitialGameId);
+  const [selectedGameKey, setSelectedGameKey] = useState<string | null>(getModsGameKeyFromHash);
   const [myModsOnly, setMyModsOnly] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -50,22 +53,20 @@ export const ModsPage: React.FC<ModsPageProps> = ({ user, games }) => {
 
   useEffect(() => {
     const onHashChange = () => {
-      const parts = window.location.hash.slice(1).split('/');
-      if (parts[0] === 'mods') {
-        setSelectedGameId(parts.length >= 2 ? parts.slice(1).join('/') : null);
-      }
+      setSelectedGameKey(getModsGameKeyFromHash());
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  const selectGame = (gameId: string) => {
-    setSelectedGameId(gameId);
-    window.location.hash = `mods/${gameId}`;
+  const selectGame = (game: ModGame) => {
+    const gameKey = toRouteSlug(game.gameName);
+    setSelectedGameKey(gameKey);
+    window.location.hash = `mods/${encodeURIComponent(gameKey)}`;
   };
 
   const goBack = () => {
-    setSelectedGameId(null);
+    setSelectedGameKey(null);
     window.location.hash = 'mods';
   };
 
@@ -96,8 +97,20 @@ export const ModsPage: React.FC<ModsPageProps> = ({ user, games }) => {
     }, {})
   );
 
-  const selectedGame = selectedGameId ? modGames.find((g) => g.gameId === selectedGameId) ?? null : null;
-  const selectedMods = selectedGameId ? visibleMods.filter((m) => m.gameId === selectedGameId) : [];
+  const selectedGame = selectedGameKey
+    ? modGames.find((g) => matchesGameRouteKey(selectedGameKey, g.gameId, g.gameName)) ?? null
+    : null;
+  const selectedMods = selectedGame ? visibleMods.filter((m) => m.gameId === selectedGame.gameId) : [];
+
+  useEffect(() => {
+    if (!selectedGame || !selectedGameKey) return;
+
+    const slug = toRouteSlug(selectedGame.gameName);
+    if (selectedGameKey === slug) return;
+
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#mods/${encodeURIComponent(slug)}`);
+    setSelectedGameKey(slug);
+  }, [selectedGame, selectedGameKey]);
 
   const prefilledGame = selectedGame
     ? { gameId: selectedGame.gameId, gameName: selectedGame.gameName, gameIconUrl: selectedGame.gameIconUrl }
@@ -120,8 +133,8 @@ export const ModsPage: React.FC<ModsPageProps> = ({ user, games }) => {
   };
 
   // ── Level 2: mods for selected game ──────────────────────────────────────
-  if (selectedGameId) {
-    const game = selectedGame ?? { gameId: selectedGameId, gameName: '—', modCount: 0 };
+  if (selectedGameKey) {
+    const game = selectedGame ?? { gameId: selectedGameKey, gameName: '—', modCount: 0 };
     return (
       <div className="flex-1 overflow-hidden flex flex-col bg-pd-bg">
         <div className="px-6 py-4 border-b border-pd-b1 flex items-center gap-4 shrink-0">
@@ -268,7 +281,7 @@ export const ModsPage: React.FC<ModsPageProps> = ({ user, games }) => {
             {modGames.map((game) => (
               <button
                 key={game.gameId}
-                onClick={() => selectGame(game.gameId)}
+                onClick={() => selectGame(game)}
                 className="group relative aspect-video rounded-lg overflow-hidden cursor-pointer focus:outline-none border border-pd-b1 bg-pd-s2 transition-all duration-300 hover:-translate-y-1"
                 style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}
                 onMouseEnter={(e) => {
