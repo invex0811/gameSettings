@@ -109,7 +109,7 @@ function App() {
   };
 
   return (
-    <div className="h-screen bg-pd-bg flex flex-col overflow-hidden">
+    <div className="h-screen bg-pd-bg dashboard-grid flex flex-col overflow-hidden">
       <Header
         user={user}
         view={view}

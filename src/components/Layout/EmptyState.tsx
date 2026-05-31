@@ -79,12 +79,14 @@ export const EmptyState = ({ games, profileCounts, onSelectGame }: EmptyStatePro
 
   return (
     <div className="flex-1 overflow-y-auto p-6 bg-pd-bg">
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-[0.15em] mb-1">Your Collection</p>
-        <h1 className="text-2xl font-extrabold text-white tracking-tight">Game Library</h1>
-        <p className="text-xs text-slate-600 mt-1">
-          {games.length} title{games.length !== 1 ? 's' : ''}
-        </p>
+      <div className="mb-6 rounded-2xl border border-pd-b1 bg-pd-surface/70 p-5 shadow-panel-soft">
+        <div>
+          <p className="text-[10px] font-semibold text-cyan-300 uppercase tracking-[0.18em] mb-1">Your Collection</p>
+          <h1 className="text-3xl font-black text-white tracking-tight">Game Library</h1>
+          <p className="text-xs text-slate-500 mt-1">
+            {games.length} title{games.length !== 1 ? 's' : ''} ready for profile management
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">

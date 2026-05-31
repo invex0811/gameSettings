@@ -7,7 +7,7 @@ interface TagProps {
 
 export const Tag: React.FC<TagProps> = ({ label, onRemove }) => {
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider bg-violet-950/60 text-violet-400 border border-violet-800/40">
+    <span className="inline-flex items-center gap-1 rounded-full border border-violet-500/25 bg-violet-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-violet-200">
       {label}
       {onRemove && (
         <button

@@ -59,6 +59,15 @@ export const ProfileList: React.FC<ProfileListProps> = ({
     [profiles]
   );
 
+  const stats = useMemo(() => {
+    const params = profiles.reduce((sum, profile) => sum + profile.params.length, 0);
+    const files = profiles.reduce((sum, profile) => sum + profile.files.length, 0);
+    const archives = profiles.reduce((sum, profile) => sum + (profile.archives || []).length, 0);
+    return { params, files, archives, tags: allTags.length };
+  }, [allTags.length, profiles]);
+
+  const recentProfile = profiles[0] ?? null;
+
   const filteredProfiles = useMemo(
     () =>
       activeTags.length === 0
@@ -117,29 +126,30 @@ export const ProfileList: React.FC<ProfileListProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col bg-pd-bg">
+    <div className="flex-1 overflow-hidden flex flex-col bg-pd-bg/80">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-pd-b1 shrink-0">
-        <div className="flex items-center gap-3">
+      <div className="px-6 py-5 border-b border-pd-b1 shrink-0">
+        <div className="flex items-center justify-between gap-5">
+        <div className="flex items-center gap-4 min-w-0">
           <GameIcon
             iconUrl={game.iconUrl}
             color={game.color}
             name={game.name}
-            className="w-11 h-11 rounded-lg shrink-0 shadow-lg object-cover border border-pd-b2"
+            className="w-14 h-14 rounded-xl shrink-0 shadow-panel-soft object-cover border border-pd-b2"
           />
-          <div>
-            <p className="text-[10px] font-semibold text-violet-400 uppercase tracking-[0.12em] mb-0.5">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold text-cyan-300 uppercase tracking-[0.18em] mb-1">
               Active Game
             </p>
-            <h1 className="text-xl font-extrabold text-white tracking-tight">{game.name}</h1>
-            <p className="text-xs text-slate-600">
+            <h1 className="text-2xl font-black text-white tracking-tight truncate">{game.name}</h1>
+            <p className="text-xs text-slate-500">
               {activeTags.length > 0
                 ? `${filteredProfiles.length} of ${profiles.length} profiles`
                 : `${profiles.length} profile${profiles.length !== 1 ? 's' : ''}`}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="secondary"
             size="sm"
@@ -167,6 +177,14 @@ export const ProfileList: React.FC<ProfileListProps> = ({
             </svg>
             New Profile
           </Button>
+        </div>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <MetricCard label="Profiles" value={profiles.length} accent="violet" />
+          <MetricCard label="Parameters" value={stats.params} accent="cyan" />
+          <MetricCard label="Files" value={stats.files + stats.archives} accent="amber" />
+          <MetricCard label="Tags" value={stats.tags} accent="slate" />
         </div>
       </div>
 
@@ -227,17 +245,39 @@ export const ProfileList: React.FC<ProfileListProps> = ({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-            {filteredProfiles.map((profile) => (
-              <ProfileCard
-                key={profile.id}
-                profile={profile}
-                onView={() => setViewingProfile(profile)}
-                onEdit={() => { setIsCreating(false); setEditingProfile(profile); }}
-                onDelete={() => setConfirmProfile(profile)}
-                onCopy={() => onCopyProfile(profile)}
-              />
-            ))}
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid grid-cols-1 gap-3 2xl:grid-cols-2">
+              {filteredProfiles.map((profile) => (
+                <ProfileCard
+                  key={profile.id}
+                  profile={profile}
+                  onView={() => setViewingProfile(profile)}
+                  onEdit={() => { setIsCreating(false); setEditingProfile(profile); }}
+                  onDelete={() => setConfirmProfile(profile)}
+                  onCopy={() => onCopyProfile(profile)}
+                />
+              ))}
+            </div>
+            <aside className="hidden xl:block">
+              <div className="glass-panel sticky top-0 rounded-xl p-4">
+                <p className="text-[10px] font-semibold text-cyan-300 uppercase tracking-[0.18em]">Quick Summary</p>
+                <h2 className="mt-1 text-lg font-black text-white">Config health</h2>
+                <div className="mt-4 space-y-3">
+                  <SummaryRow label="Profiles with files" value={profiles.filter((p) => p.files.length > 0 || (p.archives || []).length > 0).length} total={profiles.length} />
+                  <SummaryRow label="Tagged profiles" value={profiles.filter((p) => p.tags.length > 0).length} total={profiles.length} />
+                  <SummaryRow label="Parameterized" value={profiles.filter((p) => p.params.length > 0).length} total={profiles.length} />
+                </div>
+                <div className="mt-5 rounded-lg border border-pd-b1 bg-pd-bg/70 p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Latest profile</p>
+                  <p className="mt-1 truncate text-sm font-bold text-white">{recentProfile?.name ?? 'No profile selected'}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {recentProfile
+                      ? `${recentProfile.params.length} params · ${recentProfile.files.length + (recentProfile.archives || []).length} files`
+                      : 'Create one to start tuning presets.'}
+                  </p>
+                </div>
+              </div>
+            </aside>
           </div>
         )}
       </div>
@@ -265,6 +305,46 @@ export const ProfileList: React.FC<ProfileListProps> = ({
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmProfile(null)}
       />
+    </div>
+  );
+};
+
+const MetricCard = ({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number;
+  accent: 'violet' | 'cyan' | 'amber' | 'slate';
+}) => {
+  const accents = {
+    violet: 'from-violet-500/20 to-violet-500/5 text-violet-200 border-violet-500/20',
+    cyan: 'from-cyan-500/18 to-cyan-500/5 text-cyan-200 border-cyan-500/20',
+    amber: 'from-amber-500/18 to-amber-500/5 text-amber-200 border-amber-500/20',
+    slate: 'from-slate-500/12 to-slate-500/5 text-slate-200 border-pd-b1',
+  };
+
+  return (
+    <div className={`rounded-xl border bg-gradient-to-br ${accents[accent]} px-4 py-3`}>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] opacity-70">{label}</p>
+      <p className="mt-1 text-2xl font-black text-white tabular-nums">{value}</p>
+    </div>
+  );
+};
+
+const SummaryRow = ({ label, value, total }: { label: string; value: number; total: number }) => {
+  const percent = total > 0 ? Math.round((value / total) * 100) : 0;
+
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+        <span className="text-slate-400">{label}</span>
+        <span className="font-bold text-slate-200">{value}/{total}</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-pd-bg">
+        <div className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-300" style={{ width: `${percent}%` }} />
+      </div>
     </div>
   );
 };

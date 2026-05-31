@@ -34,7 +34,7 @@ export const Header: React.FC<HeaderProps> = ({ user, view, onViewChange, onExpo
   };
 
   return (
-    <header className="h-14 bg-pd-surface border-b border-pd-b1 flex items-center justify-between px-5 shrink-0 z-10 relative">
+    <header className="h-16 bg-pd-surface/95 border-b border-pd-b1 flex items-center justify-between px-5 shrink-0 z-10 relative backdrop-blur-xl">
       <div
         className="absolute top-0 left-0 right-0 h-px"
         style={{
@@ -44,31 +44,26 @@ export const Header: React.FC<HeaderProps> = ({ user, view, onViewChange, onExpo
         }}
       />
 
-      <button
-        onClick={onHome}
-        className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
-      >
-        <svg
-          className="w-5 h-5 text-violet-400 shrink-0"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-          style={{ filter: 'drop-shadow(0 0 5px rgba(139,92,246,0.5))' }}
-        >
-          <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5S19.33 12 18.5 12z" />
-        </svg>
+      <button onClick={onHome} className="flex items-center gap-3 hover:opacity-90 transition-opacity">
+        <span className="relative grid h-9 w-9 place-items-center rounded-xl border border-violet-500/30 bg-violet-950/50 shadow-glow-violet-sm">
+          <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border border-pd-surface bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.7)]" />
+          <svg className="w-5 h-5 text-violet-200 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5S14.67 12 15.5 12s1.5.67 1.5 1.5S16.33 15 15.5 15zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5S19.33 12 18.5 12z" />
+          </svg>
+        </span>
         <div className="flex flex-col leading-none">
-          <span className="text-[10px] font-medium text-slate-600 tracking-[0.2em] uppercase">Game</span>
-          <span className="text-[15px] font-extrabold text-white tracking-tight">Settings</span>
+          <span className="text-[10px] font-semibold text-cyan-300 tracking-[0.22em] uppercase">Game</span>
+          <span className="text-[16px] font-extrabold text-white tracking-tight">Settings</span>
         </div>
       </button>
 
       {/* Nav tabs */}
-      <div className="flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+      <div className="flex items-center gap-1 absolute left-1/2 -translate-x-1/2 rounded-xl border border-pd-b1 bg-pd-bg/70 p-1 shadow-panel-soft">
         <button
           onClick={onHome}
           className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 border ${
             view === 'settings'
-              ? 'bg-violet-950/60 border-violet-800/60 text-violet-300'
+              ? 'bg-violet-600/20 border-violet-500/40 text-violet-100 shadow-glow-violet-sm'
               : 'border-transparent text-slate-500 hover:text-slate-300 hover:bg-pd-s2'
           }`}
         >
@@ -78,7 +73,7 @@ export const Header: React.FC<HeaderProps> = ({ user, view, onViewChange, onExpo
           onClick={() => onViewChange('mods')}
           className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 border ${
             view === 'mods'
-              ? 'bg-violet-950/60 border-violet-800/60 text-violet-300'
+              ? 'bg-violet-600/20 border-violet-500/40 text-violet-100 shadow-glow-violet-sm'
               : 'border-transparent text-slate-500 hover:text-slate-300 hover:bg-pd-s2'
           }`}
         >
@@ -88,10 +83,10 @@ export const Header: React.FC<HeaderProps> = ({ user, view, onViewChange, onExpo
 
       {/* User area */}
       {isGoogleUser ? (
-        <div className="relative">
+        <div className="relative flex items-center gap-2">
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-pd-b2 hover:border-violet-700 bg-pd-s2 hover:bg-pd-s3 transition-all duration-150"
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-pd-b2 hover:border-violet-500/70 bg-pd-s2 hover:bg-pd-s3 transition-all duration-150"
           >
             {user.photoURL ? (
               <img
