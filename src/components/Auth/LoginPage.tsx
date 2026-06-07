@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { signInWithGoogle } from '../../firebase/auth';
+import { isFirebaseConfigured, missingFirebaseEnv } from '../../firebase/config';
 
 export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignIn = async () => {
+    if (!isFirebaseConfigured) return;
     setLoading(true);
     setError(null);
     try {
@@ -67,7 +69,7 @@ export const LoginPage: React.FC = () => {
 
           <button
             onClick={handleSignIn}
-            disabled={loading}
+            disabled={loading || !isFirebaseConfigured}
             className="w-full flex items-center justify-center gap-3 bg-pd-s2 hover:bg-pd-s3 text-slate-200 font-semibold py-3 px-4 rounded-lg border border-pd-b2 hover:border-violet-700 transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (
@@ -85,6 +87,12 @@ export const LoginPage: React.FC = () => {
             )}
             {loading ? 'Signing in...' : 'Sign in with Google'}
           </button>
+
+          {!isFirebaseConfigured && (
+            <p className="mt-4 text-xs text-amber-300 text-center leading-relaxed">
+              Fill Firebase values in .env: {missingFirebaseEnv.join(', ')}
+            </p>
+          )}
 
           {error && (
             <p className="mt-4 text-xs text-red-400 text-center">{error}</p>

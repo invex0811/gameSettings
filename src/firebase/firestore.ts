@@ -13,14 +13,23 @@ import {
   Unsubscribe,
   DocumentData,
   QuerySnapshot,
+  Firestore,
 } from 'firebase/firestore';
-import { db } from './config';
+import { db, isFirebaseConfigured, requireFirebaseConfig } from './config';
 import { Game, Profile, GameParam, GameFile, DropboxArchive, Mod } from '../types';
+
+const requireDb = (): Firestore => {
+  requireFirebaseConfig();
+  if (!db) {
+    throw new Error('Firestore is unavailable.');
+  }
+  return db;
+};
 
 // ---- Games ----
 
 export const gamesCollection = (uid: string) =>
-  collection(db, 'users', uid, 'games');
+  collection(requireDb(), 'users', uid, 'games');
 
 export const addGame = async (
   uid: string,
@@ -42,7 +51,7 @@ export const updateGame = async (
   gameId: string,
   data: { name?: string; color?: string; iconUrl?: string | null }
 ): Promise<void> => {
-  await updateDoc(doc(db, 'users', uid, 'games', gameId), data);
+  await updateDoc(doc(requireDb(), 'users', uid, 'games', gameId), data);
 };
 
 export const deleteGame = async (uid: string, gameId: string): Promise<void> => {
@@ -50,7 +59,7 @@ export const deleteGame = async (uid: string, gameId: string): Promise<void> => 
   const profilesSnap = await getDocs(profilesCollection(uid, gameId));
   const deletePromises = profilesSnap.docs.map((d) => deleteDoc(d.ref));
   await Promise.all(deletePromises);
-  await deleteDoc(doc(db, 'users', uid, 'games', gameId));
+  await deleteDoc(doc(requireDb(), 'users', uid, 'games', gameId));
 };
 
 export const getProfileCounts = async (
@@ -83,7 +92,7 @@ export const subscribeToGames = (
 // ---- Profiles ----
 
 export const profilesCollection = (uid: string, gameId: string) =>
-  collection(db, 'users', uid, 'games', gameId, 'profiles');
+  collection(requireDb(), 'users', uid, 'games', gameId, 'profiles');
 
 export const addProfile = async (
   uid: string,
@@ -123,7 +132,7 @@ export const updateProfile = async (
     archives?: DropboxArchive[];
   }
 ): Promise<void> => {
-  const ref = doc(db, 'users', uid, 'games', gameId, 'profiles', profileId);
+  const ref = doc(requireDb(), 'users', uid, 'games', gameId, 'profiles', profileId);
   await updateDoc(ref, {
     ...data,
     updatedAt: serverTimestamp(),
@@ -136,7 +145,7 @@ export const deleteProfile = async (
   profileId: string
 ): Promise<void> => {
   await deleteDoc(
-    doc(db, 'users', uid, 'games', gameId, 'profiles', profileId)
+    doc(requireDb(), 'users', uid, 'games', gameId, 'profiles', profileId)
   );
 };
 
@@ -178,11 +187,15 @@ export const getAllGamesWithProfiles = async (uid: string) => {
 
 // ---- Mods (public collection) ----
 
-export const modsCollection = () => collection(db, 'mods');
+export const modsCollection = () => collection(requireDb(), 'mods');
 
 export const subscribeToMods = (
   callback: (mods: Mod[]) => void
 ): Unsubscribe => {
+  if (!isFirebaseConfigured) {
+    callback([]);
+    return () => undefined;
+  }
   const q = query(modsCollection(), orderBy('uploadedAt', 'desc'));
   return onSnapshot(q, (snap: QuerySnapshot<DocumentData>) => {
     const mods: Mod[] = snap.docs.map((d) => ({
@@ -204,14 +217,14 @@ export const addMod = async (
 };
 
 export const deleteMod = async (modId: string): Promise<void> => {
-  await deleteDoc(doc(db, 'mods', modId));
+  await deleteDoc(doc(requireDb(), 'mods', modId));
 };
 
 export const updateMod = async (
   modId: string,
   data: { name?: string; description?: string; modIconUrl?: string | null }
 ): Promise<void> => {
-  await updateDoc(doc(db, 'mods', modId), data);
+  await updateDoc(doc(requireDb(), 'mods', modId), data);
 };
 
 export const subscribeToProfiles = (
